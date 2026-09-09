@@ -1,0 +1,2671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SiteCalc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brown-dark:#4A2E1C;
+    --brown:#6B4226;
+    --brown-mid:#8B5E3C;
+    --cream:#F7EFE6;
+    --bg:#F0ECE7;
+    --white:#FFFFFF;
+    --peach:#F3DCC0;
+    --peach-soft:#FBEEE0;
+    --orange:#C97C3D;
+    --orange-warn-bg:#FCEBD9;
+    --orange-warn-text:#B9541F;
+    --green:#25D366;
+    --green-dark:#1EA952;
+    --red:#D64545;
+    --text:#2B2118;
+    --text-mid:#5C4E42;
+    --text-muted:#9A8B7C;
+    --border:#E7DFD5;
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    --shadow: 0 4px 16px rgba(74,46,28,0.08);
+  }
+  body.dark{
+    --bg:#1C1611; --white:#2A221A; --cream:#241D16; --peach-soft:#3A2C1C;
+    --text:#F2E9DE; --text-mid:#C9B9A8; --text-muted:#8C7C6C; --border:#3A2E22;
+    background:#0F0C09;
+  }
+  body.dark .app-shell{ background:var(--bg); }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Inter',-apple-system,sans-serif;
+    background:#DCD5CC;
+    color:var(--text);
+  }
+  button, select, input{ font-family:inherit; }
+
+  .app-shell{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--bg);
+    position:relative;
+    overflow-x:hidden;
+  }
+  @media (min-width:520px){
+    .app-shell{ box-shadow:0 0 60px rgba(0,0,0,0.25); min-height:100vh; }
+    body{ padding:20px 0; }
+  }
+
+  .screen{ display:none; min-height:100vh; flex-direction:column; padding-bottom:92px; }
+  .screen.active{ display:flex; }
+
+  /* ---------- icon base ---------- */
+  .icon{ width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .icon svg{ width:100%; height:100%; }
+
+  /* ---------- Headers ---------- */
+  .header-brown{
+    background:linear-gradient(160deg, var(--brown) 0%, var(--brown-dark) 100%);
+    color:#fff;
+    padding:18px 20px 40px;
+    border-bottom-left-radius:50% 34px;
+    border-bottom-right-radius:50% 34px;
+    position:relative;
+  }
+  .header-brown .greeting{ font-size:14px; color:#E9D6C2; margin-top:10px; }
+  .header-brown .title{ font-size:21px; font-weight:800; margin-top:4px; }
+
+  .search-wrap{ padding:0 20px; margin-top:-26px; position:relative; z-index:2; }
+  .search-bar{
+    background:var(--white);
+    border-radius:999px;
+    display:flex; align-items:center; gap:10px;
+    padding:13px 18px;
+    color:var(--text-muted);
+    font-size:13.5px;
+    box-shadow:0 8px 20px rgba(74,46,28,0.18);
+    border:none;
+    width:100%;
+  }
+  .search-bar .icon{ color:var(--text-muted); width:18px; height:18px; }
+
+  .header-flat{
+    background:linear-gradient(160deg, var(--brown) 0%, var(--brown-dark) 100%);
+    color:#fff;
+    padding:16px 16px 20px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .header-flat .back{
+    width:36px; height:36px; border-radius:11px;
+    background:rgba(255,255,255,0.15);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0; color:#fff;
+    border:none;
+  }
+  .header-flat .back .icon{ width:18px; height:18px; }
+  .header-flat .htext .h1{ font-size:17px; font-weight:700; }
+  .header-flat .htext .h2{ font-size:12px; color:#E5CFB8; margin-top:2px; display:flex; align-items:center; gap:4px; }
+  .header-flat.between{ justify-content:space-between; }
+  .header-flat .pill-btn{
+    background:rgba(255,255,255,0.16);
+    color:#fff; font-size:12.5px; font-weight:600;
+    padding:8px 14px; border-radius:11px;
+    display:flex; align-items:center; gap:6px;
+    border:none; cursor:pointer;
+  }
+
+  .content{ padding:20px 20px 24px; flex:1; }
+  .section-title{ font-size:15px; font-weight:700; margin:18px 0 12px; color:var(--text); }
+  .section-title:first-child{ margin-top:0; }
+
+  /* recent used row */
+  .recent-row{ display:flex; gap:12px; }
+  .recent-card{
+    flex:1; background:var(--white); border-radius:var(--radius-md);
+    box-shadow:var(--shadow); padding:16px 8px 12px; text-align:center;
+    cursor:pointer; border:none;
+  }
+  .recent-card .icon{ width:26px; height:26px; margin:0 auto 8px; color:var(--brown-dark); }
+  .recent-card .label{ font-size:12.5px; font-weight:600; }
+
+  .chip-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; -ms-overflow-style:none; }
+  .chip-row::-webkit-scrollbar{ display:none; height:0; }
+  .chip{
+    padding:8px 16px; border-radius:999px; font-size:12.5px; font-weight:600;
+    background:var(--white); color:var(--text-mid); border:1px solid var(--border);
+    white-space:nowrap; cursor:pointer; flex-shrink:0;
+  }
+  .chip.active{ background:var(--brown-dark); color:#fff; border-color:var(--brown-dark); }
+
+  .calc-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
+  .calc-tile{
+    background:var(--white); border-radius:var(--radius-md); box-shadow:var(--shadow);
+    padding:16px; display:flex; align-items:center; gap:12px; cursor:pointer; border:none; text-align:left;
+    width:100%;
+  }
+  .calc-tile .icon{ width:24px; height:24px; color:var(--brown-dark); flex-shrink:0; }
+  .calc-tile .t{ font-size:13.5px; font-weight:700; }
+  .calc-tile .s{ font-size:11.5px; color:var(--text-muted); margin-top:1px; }
+
+  /* ---------- Bottom nav ---------- */
+  .bottom-nav{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:0;
+    width:100%; max-width:480px;
+    background:var(--white); border-top:1px solid var(--border);
+    display:flex; padding:9px 8px 12px; z-index:50;
+  }
+  .nav-item{
+    flex:1; text-align:center; font-size:10.5px; color:var(--text-muted);
+    display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;
+    padding:6px 0; border-radius:14px; font-weight:600; background:none; border:none;
+  }
+  .nav-item .icon{ width:20px; height:20px; }
+  .nav-item.active{ color:var(--brown-dark); background:var(--peach-soft); }
+
+  /* ---------- Form fields ---------- */
+  .field-group{ background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:18px; margin-bottom:16px; }
+  .field-group h3{ font-size:13.5px; font-weight:700; margin-bottom:14px; color:var(--text); }
+  .field{ margin-bottom:14px; }
+  .field:last-child{ margin-bottom:0; }
+  .field label{ display:block; font-size:12.5px; color:var(--text-mid); font-weight:600; margin-bottom:6px; }
+  .input-row{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:var(--cream); border:1.5px solid var(--border); border-radius:var(--radius-sm);
+    padding:12px 14px; font-size:14.5px; font-weight:600; color:var(--text);
+  }
+  .input-row:focus-within{ background:#fff; border-color:var(--brown-mid); }
+  .input-row input{
+    border:none; background:transparent; font-size:14.5px; font-weight:600; color:var(--text);
+    width:100%; font-family:inherit; outline:none;
+  }
+  .input-row select{
+    border:none; background:transparent; font-size:14px; font-weight:600; color:var(--text);
+    width:100%; font-family:inherit; outline:none;
+  }
+  .input-row .unit{ color:var(--text-muted); font-size:12.5px; font-weight:600; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+  .mic-btn{ color:var(--brown-mid); background:none; border:none; display:flex; cursor:pointer; padding:2px; }
+  .mic-btn .icon{ width:15px; height:15px; }
+
+  .divider-note{
+    display:flex; align-items:center; gap:8px; margin:6px 0 16px;
+    font-size:11px; color:var(--text-muted); font-weight:600;
+  }
+  .divider-note::before, .divider-note::after{ content:""; flex:1; height:1px; background:var(--border); }
+
+  .opening-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0; border-bottom:1px solid var(--border);
+  }
+  .opening-row:last-of-type{ border-bottom:none; }
+  .opening-row .oi{ display:flex; align-items:center; gap:10px; font-size:13.5px; font-weight:600; }
+  .opening-row .oi .icon{ width:20px; height:20px; color:var(--brown-dark); }
+  .opening-row .om{ font-size:11.5px; color:var(--text-muted); font-weight:500; }
+  .opening-row .del{ color:var(--red); background:none; border:none; cursor:pointer; display:flex; }
+  .opening-row .del .icon{ width:18px; height:18px; }
+  .add-row{
+    display:flex; align-items:center; gap:8px; padding-top:12px; color:var(--brown);
+    font-size:13.5px; font-weight:700; cursor:pointer; background:none; border:none; width:100%;
+  }
+  .add-row .plus{
+    width:24px; height:24px; border:1.5px solid var(--brown); border-radius:7px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .add-row .plus .icon{ width:14px; height:14px; }
+
+  .primary-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; text-align:center; background:var(--brown-dark); color:#fff;
+    font-size:15px; font-weight:700; padding:16px; border-radius:16px; border:none;
+    cursor:pointer; font-family:inherit;
+  }
+  .primary-btn:active{ opacity:0.85; }
+  .secondary-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; text-align:center; background:var(--white); color:var(--brown-dark);
+    font-size:14px; font-weight:700; padding:14px; border-radius:14px; border:1.5px solid var(--brown-dark);
+    cursor:pointer; font-family:inherit; margin-top:10px;
+  }
+
+  /* ---------- Results ---------- */
+  .result-hero{
+    background:linear-gradient(155deg, var(--brown-mid) 0%, var(--brown-dark) 100%);
+    border-radius:var(--radius-lg); padding:22px; color:#fff; margin-bottom:14px;
+  }
+  .result-hero .rlabel{ font-size:12.5px; color:#E9D6C2; font-weight:600; }
+  .result-hero .rvalue{ font-size:34px; font-weight:800; margin:4px 0 2px; }
+  .result-hero .rsub{ font-size:11.5px; color:#DCC3A8; margin-bottom:14px; }
+  .stat-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .stat-chip{
+    flex:1; min-width:80px; background:rgba(255,255,255,0.14); border-radius:12px; padding:10px 8px; text-align:center;
+  }
+  .stat-chip .sv{ font-size:15px; font-weight:800; }
+  .stat-chip .sl{ font-size:9.5px; color:#EAD9C4; margin-top:2px; font-weight:600; }
+
+  .audit-box{
+    background:var(--orange-warn-bg); border-radius:var(--radius-md); padding:14px;
+    margin-bottom:14px; display:flex; gap:10px;
+  }
+  .audit-box .icon{ width:18px; height:18px; color:var(--orange-warn-text); flex-shrink:0; margin-top:1px; }
+  .audit-box .atitle{ font-size:12.5px; font-weight:700; color:var(--orange-warn-text); margin-bottom:2px; }
+  .audit-box .atext{ font-size:12px; color:#8A4E20; line-height:1.4; }
+
+  .step-panel{ background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:16px 18px; margin-bottom:14px; }
+  .step-panel .sp-head{ display:flex; justify-content:space-between; align-items:center; font-size:13.5px; font-weight:700; cursor:pointer; }
+  .step-panel .sp-head .icon{ width:16px; height:16px; color:var(--text-mid); transition:transform .15s; }
+  .step-panel.collapsed .sp-body{ display:none; }
+  .step-panel.collapsed .sp-head .icon{ transform:rotate(0deg); }
+  .step-panel:not(.collapsed) .sp-head .icon{ transform:rotate(180deg); }
+  .step-panel .sp-body{ font-size:13px; color:var(--text-mid); line-height:2; margin-top:12px; }
+  .step-panel .sp-body b{ color:var(--text); font-weight:700; }
+
+  .share-row{ display:flex; gap:10px; }
+  .whatsapp-btn{
+    flex:1; background:var(--green); color:#fff; font-weight:700; font-size:13.5px;
+    padding:14px; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+    border:none;
+  }
+  .whatsapp-btn .icon{ width:18px; height:18px; }
+  .pdf-btn{
+    width:64px; background:#fff; border:1.5px solid var(--red); color:var(--red); font-weight:700; font-size:11px;
+    padding:12px 8px; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer;
+  }
+  .pdf-btn .icon{ width:18px; height:18px; }
+  .toast{
+    position:fixed; left:50%; top:24px; transform:translate(-50%,-140%);
+    background:var(--brown-dark); color:#fff; font-size:13px; font-weight:600;
+    padding:11px 18px; border-radius:12px; display:flex; align-items:center; gap:8px;
+    z-index:200; transition:transform .25s ease; box-shadow:0 8px 20px rgba(0,0,0,0.25);
+  }
+  .toast.show{ transform:translate(-50%,0); }
+  .toast .icon{ width:16px; height:16px; color:var(--green); }
+
+  /* bar mark card (BBS) */
+  .bar-card{ background:var(--white); border-radius:var(--radius-md); box-shadow:var(--shadow); padding:14px; margin-bottom:10px; }
+  .bar-card .bc-head{ display:flex; justify-content:space-between; align-items:center; font-size:13.5px; font-weight:700; margin-bottom:10px; }
+  .bar-card .bc-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; }
+  .bar-card .bc-field label{ font-size:9.5px; color:var(--text-muted); font-weight:600; display:block; margin-bottom:4px; }
+  .bar-card .bc-field select, .bar-card .bc-field input{
+    width:100%; border:1px solid var(--border); border-radius:8px; padding:7px 6px; font-size:11.5px; font-weight:600; background:var(--cream);
+  }
+  .bbs-table{ width:100%; border-collapse:collapse; font-size:12px; }
+  .bbs-table th{ text-align:left; color:var(--text-muted); font-weight:600; padding:6px 4px; border-bottom:1.5px solid var(--border); font-size:10.5px; }
+  .bbs-table td{ padding:8px 4px; border-bottom:1px solid var(--border); font-weight:600; }
+
+  /* projects */
+  .project-card{ background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:18px; margin-bottom:14px; cursor:pointer; }
+  .project-card .pc-top{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .project-card .pname{ font-size:15px; font-weight:700; }
+  .project-card .pamt{ font-size:15px; font-weight:800; color:var(--brown-dark); }
+  .project-card .ploc{ font-size:12px; color:var(--text-muted); margin:4px 0 12px; display:flex; align-items:center; gap:4px; }
+  .project-card .ploc .icon{ width:13px; height:13px; }
+  .progress-track{ height:6px; background:var(--peach-soft); border-radius:99px; overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--brown-dark); border-radius:99px; }
+  .project-card .pc-bottom{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+  .stage-label{ font-size:12px; color:var(--text-mid); font-weight:600; }
+  .view-btn{ font-size:11.5px; font-weight:700; border:1.5px solid var(--brown-dark); color:var(--brown-dark); padding:6px 12px; border-radius:999px; background:none; display:flex; align-items:center; gap:4px; }
+  .view-btn .icon{ width:12px; height:12px; }
+
+  /* history */
+  .history-card{ background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:16px; margin-bottom:12px; display:flex; align-items:center; gap:14px; cursor:pointer; }
+  .history-card .hicon{ width:44px; height:44px; border-radius:12px; background:var(--peach-soft); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .history-card .hicon .icon{ width:22px; height:22px; color:var(--brown-dark); }
+  .history-card .htitle{ font-size:13.5px; font-weight:700; }
+  .history-card .hsub{ font-size:11.5px; color:var(--text-muted); }
+  .history-card .hright{ margin-left:auto; text-align:right; }
+  .history-card .hval{ font-size:14px; font-weight:800; color:var(--brown-dark); }
+  .history-card .hdup{ font-size:10.5px; color:var(--text-muted); font-weight:600; background:none; border:none; padding:0; margin-top:2px; display:flex; align-items:center; gap:2px; }
+
+  /* project overview */
+  .progress-card-hero{ background:linear-gradient(155deg, var(--brown-mid) 0%, var(--brown-dark) 100%); border-radius:var(--radius-lg); padding:20px; color:#fff; margin-bottom:14px; }
+  .progress-card-hero .plabel{ font-size:13px; color:#E9D6C2; font-weight:600; }
+  .progress-card-hero .pvalue{ font-size:32px; font-weight:800; margin:4px 0 2px; }
+  .progress-card-hero .psub{ font-size:12px; color:#DCC3A8; }
+  .two-col{ display:flex; gap:12px; margin-bottom:16px; }
+  .info-card{ flex:1; background:var(--white); border-radius:var(--radius-md); box-shadow:var(--shadow); padding:14px; }
+  .info-card .il{ font-size:11.5px; color:var(--text-muted); font-weight:600; margin-bottom:6px; }
+  .info-card .iv{ font-size:15px; font-weight:800; }
+  .info-card .iv small{ font-size:11.5px; color:var(--text-muted); font-weight:600; }
+  .floor-card{ background:var(--white); border-radius:var(--radius-md); box-shadow:var(--shadow); padding:16px; margin-bottom:10px; }
+  .floor-card .fc-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
+  .floor-card .fname{ font-size:14.5px; font-weight:700; }
+  .floor-card .fstatus{ font-size:12px; font-weight:700; }
+  .floor-card .fstatus.complete{ color:var(--green-dark); }
+  .floor-card .fstatus.progress{ color:var(--brown); }
+  .floor-card .fstatus.notstarted{ color:var(--text-muted); }
+  .floor-card .fitems{ font-size:12px; color:var(--text-muted); margin-bottom:10px; }
+  .team-row{ background:var(--white); border-radius:var(--radius-md); box-shadow:var(--shadow); padding:14px; display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .avatar{ width:44px; height:44px; border-radius:50%; background:var(--peach); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; color:var(--brown-dark); flex-shrink:0; }
+  .team-row .tname{ font-size:13.5px; font-weight:700; }
+  .team-row .trole{ font-size:11.5px; color:var(--text-muted); }
+  .team-row .tphone{ margin-left:auto; font-size:12.5px; font-weight:700; color:var(--brown-dark); }
+
+  .stage-track{ display:flex; justify-content:space-between; margin:6px 0 4px; }
+  .stage-dot{ display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; }
+  .stage-dot .dot{ width:16px; height:16px; border-radius:50%; background:var(--peach-soft); border:2px solid var(--border); }
+  .stage-dot.done .dot{ background:var(--brown-dark); border-color:var(--brown-dark); }
+  .stage-dot.current .dot{ background:var(--orange); border-color:var(--orange); }
+  .stage-dot .slabel{ font-size:8.5px; color:var(--text-muted); text-align:center; font-weight:600; }
+  .stage-line{ height:2px; background:var(--border); flex:1; margin-top:7px; }
+  .stage-line.done{ background:var(--brown-dark); }
+
+  .material-row{ display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+  .material-row:last-child{ border-bottom:none; }
+  .material-row .mstatus{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .material-row .mstatus.out{ background:var(--red); }
+  .material-row .mstatus.ord{ background:var(--green-dark); }
+  .material-row .mtitle{ font-size:13.5px; font-weight:700; flex:1; }
+  .material-row .mqty{ font-size:12px; color:var(--text-muted); font-weight:600; }
+
+  /* profile */
+  .profile-head{ display:flex; align-items:center; gap:14px; padding:6px 0 20px; }
+  .avatar-lg{ width:56px; height:56px; border-radius:50%; background:var(--peach); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; color:var(--brown-dark); }
+  .settings-row{ display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--border); }
+  .settings-row .slabel2{ font-size:13.5px; font-weight:600; }
+  .settings-row .svalue{ font-size:12.5px; color:var(--text-muted); font-weight:600; display:flex; align-items:center; gap:4px; }
+  .toggle{ width:40px; height:22px; border-radius:99px; background:var(--border); position:relative; cursor:pointer; border:none; }
+  .toggle.on{ background:var(--brown-dark); }
+  .toggle .knob{ width:18px; height:18px; border-radius:50%; background:#fff; position:absolute; top:2px; left:2px; transition:left .15s; }
+  .toggle.on .knob{ left:20px; }
+
+  /* auth screens */
+  .auth-wrap{ flex:1; display:flex; flex-direction:column; justify-content:flex-start; align-items:center; padding:60px 32px 0; text-align:center; background:linear-gradient(180deg, var(--brown-dark) 0%, var(--brown) 60%, var(--cream) 60%); min-height:100vh; position:relative; overflow:hidden; }
+  .auth-wrap .logo{ width:76px; height:76px; border-radius:22px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; margin-bottom:18px; color:#fff; }
+  .auth-wrap .logo .icon{ width:38px; height:38px; }
+  .auth-wrap .appname{ font-size:24px; font-weight:800; color:#fff; }
+  .auth-wrap .tagline{ font-size:13px; color:#E9D6C2; margin-top:6px; }
+  .auth-card{ background:#fff; border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:26px 22px; width:100%; margin-top:120px; text-align:left; }
+  .auth-card h2{ font-size:17px; font-weight:800; margin-bottom:6px; }
+  .auth-card p{ font-size:12.5px; color:var(--text-muted); margin-bottom:20px; }
+  .otp-row{ display:flex; gap:10px; justify-content:center; margin-bottom:18px; }
+  .otp-box{ width:42px; height:52px; border-radius:12px; border:1.5px solid var(--border); background:var(--cream); text-align:center; font-size:18px; font-weight:800; outline:none; }
+  .otp-box:focus{ border-color:var(--brown-mid); background:#fff; }
+  .resend{ text-align:center; font-size:12px; color:var(--text-muted); margin-top:14px; }
+  .resend b{ color:var(--brown-dark); }
+
+  .empty-state{ text-align:center; padding:60px 30px; color:var(--text-muted); }
+  .empty-state .icon{ width:34px; height:34px; margin:0 auto 12px; color:var(--text-muted); }
+  .empty-state p{ font-size:13px; line-height:1.5; }
+
+  /* construction background accent (auth screens) */
+  .construction-bg{
+    position:absolute; inset:0; z-index:0; opacity:0.16; pointer-events:none;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 42px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 42px);
+  }
+  .construction-icon{ position:absolute; right:-24px; bottom:6px; width:190px; height:190px; opacity:0.10; color:#fff; z-index:0; pointer-events:none; }
+  .auth-fg{ position:relative; z-index:1; width:100%; display:flex; flex-direction:column; align-items:center; }
+
+  /* search */
+  .search-bar-wrap{
+    background:var(--white); border-radius:999px; display:flex; align-items:center; gap:10px;
+    padding:13px 18px; box-shadow:0 8px 20px rgba(74,46,28,0.18); position:relative; z-index:2;
+  }
+  .search-bar-wrap .icon{ color:var(--text-muted); width:18px; height:18px; flex-shrink:0; }
+  .search-bar-wrap input{ border:none; outline:none; background:none; width:100%; font-size:13.5px; color:var(--text); font-family:inherit; }
+  .search-results{
+    position:absolute; left:20px; right:20px; top:calc(100% + 6px);
+    background:#fff; border-radius:16px; box-shadow:0 12px 30px rgba(74,46,28,0.2);
+    z-index:10; overflow:hidden; display:none; max-height:320px; overflow-y:auto;
+  }
+  .search-results.show{ display:block; }
+  .search-result-row{ display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .search-result-row:last-child{ border-bottom:none; }
+  .search-result-row:hover{ background:var(--cream); }
+  .search-result-row .icon{ width:18px; height:18px; color:var(--brown-dark); flex-shrink:0; }
+  .search-result-row .srt{ font-size:13px; font-weight:700; }
+  .search-result-row .srs{ font-size:11px; color:var(--text-muted); }
+  .search-empty{ padding:16px; font-size:12.5px; color:var(--text-muted); text-align:center; }
+
+  /* calc tile */
+  .calc-tile{ position:relative; }
+
+  /* delete icon buttons on cards */
+  .card-delete{ background:none; border:none; color:var(--text-muted); cursor:pointer; display:flex; padding:4px; flex-shrink:0; }
+  .card-delete:hover{ color:var(--red); }
+  .card-delete .icon{ width:16px; height:16px; }
+
+  /* confirm modal */
+  .confirm-overlay{ position:fixed; inset:0; background:rgba(43,33,24,0.55); display:none; align-items:center; justify-content:center; z-index:300; }
+  .confirm-overlay.show{ display:flex; }
+  .confirm-box{ background:#fff; border-radius:20px; padding:24px; width:82%; max-width:340px; text-align:center; }
+  .confirm-icon{ width:44px; height:44px; border-radius:50%; background:var(--orange-warn-bg); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:var(--orange-warn-text); }
+  .confirm-icon .icon{ width:20px; height:20px; }
+  .confirm-title{ font-size:15px; font-weight:800; margin-bottom:6px; }
+  .confirm-text{ font-size:12.5px; color:var(--text-muted); line-height:1.5; }
+  .confirm-actions{ display:flex; gap:10px; margin-top:18px; }
+  .confirm-actions .primary-btn, .confirm-actions .secondary-btn{ margin-top:0; }
+
+  /* settings */
+  .settings-select{ border:none; background:none; font-size:12.5px; color:var(--text-muted); font-weight:600; font-family:inherit; text-align:right; }
+  .settings-section-label{ font-size:11px; letter-spacing:0.04em; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin:4px 0 10px; }
+
+  /* floor attached calcs */
+  .floor-calc-chip{ background:var(--peach-soft); color:var(--brown-dark); font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:999px; display:inline-block; margin:6px 6px 0 0; }
+
+  /* advanced options panel */
+  .adv-panel{ padding:0; overflow:hidden; }
+  .adv-toggle{ display:flex; align-items:center; justify-content:space-between; margin:0; padding:18px; cursor:pointer; }
+  .adv-chevron{ width:15px; height:15px; color:var(--text-mid); transition:transform .15s; }
+  .adv-panel.collapsed .adv-body{ display:none; }
+  .adv-panel.collapsed .adv-chevron{ transform:rotate(0deg); }
+  .adv-panel:not(.collapsed) .adv-chevron{ transform:rotate(180deg); }
+  .adv-body{ padding:0 18px 18px; }
+  .adv-body .field{ margin-bottom:14px; }
+  .adv-body .field:last-child{ margin-bottom:0; }
+
+  /* editable opening rows */
+  .opening-row-edit{ padding:12px 0; border-bottom:1px solid var(--border); }
+  .opening-row-edit:last-child{ border-bottom:none; }
+  .opening-row-top{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .opening-row-top .icon{ width:20px; height:20px; color:var(--brown-dark); flex-shrink:0; }
+  .opening-row-top select{ flex:1; border:1px solid var(--border); border-radius:8px; padding:8px; font-size:12.5px; font-weight:600; background:var(--cream); font-family:inherit; }
+  .opening-row-dims{ display:flex; gap:10px; }
+  .odim{ flex:1; }
+  .odim label{ font-size:10px; color:var(--text-muted); font-weight:600; display:block; margin-bottom:4px; }
+  .odim input{ width:100%; border:1px solid var(--border); border-radius:8px; padding:8px; font-size:12.5px; font-weight:600; background:var(--cream); font-family:inherit; }
+
+  /* scope item checklist (floor detail) */
+  .scope-item-row{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .scope-item-row:last-child{ border-bottom:none; }
+  .scope-check{ width:26px; height:26px; border-radius:8px; border:1.5px solid var(--border); background:#fff; display:flex; align-items:center; justify-content:center; color:transparent; flex-shrink:0; cursor:pointer; }
+  .scope-check.checked{ background:var(--green-dark); border-color:var(--green-dark); color:#fff; }
+  .scope-check .icon{ width:14px; height:14px; }
+  .scope-item-input{ flex:1; border:none; background:none; font-size:13.5px; font-weight:600; color:var(--text); font-family:inherit; min-width:0; }
+  .scope-item-input.done{ color:var(--text-muted); text-decoration:line-through; }
+  .floor-card{ cursor:pointer; }
+  .floor-card .fc-top .icon{ width:14px; height:14px; color:var(--text-muted); }
+
+  /* editable info-card (budget/timeline) */
+  .info-card .il-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .info-card .edit-icon{ width:15px; height:15px; color:var(--text-muted); cursor:pointer; }
+
+  /* focus visibility for accessibility */
+  button:focus-visible, input:focus-visible, select:focus-visible, .calc-tile:focus-visible, .project-card:focus-visible{
+    outline:2px solid var(--brown-mid); outline-offset:2px;
+  }
+
+  /* help screen */
+  .help-step{ display:flex; gap:12px; margin-bottom:16px; }
+  .help-step .hs-num{ width:28px; height:28px; border-radius:50%; background:var(--peach-soft); color:var(--brown-dark); font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .help-step .hs-title{ font-size:13.5px; font-weight:700; margin-bottom:2px; }
+  .help-step .hs-text{ font-size:12px; color:var(--text-mid); line-height:1.5; }
+  .faq-item{ border-bottom:1px solid var(--border); padding:14px 0; }
+  .faq-item:last-child{ border-bottom:none; }
+  .faq-q{ display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:13.5px; font-weight:700; }
+  .faq-q .icon{ width:14px; height:14px; color:var(--text-mid); transition:transform .15s; flex-shrink:0; }
+  .faq-item.open .faq-q .icon{ transform:rotate(180deg); }
+  .faq-a{ font-size:12.5px; color:var(--text-mid); line-height:1.6; margin-top:8px; display:none; }
+  .faq-item.open .faq-a{ display:block; }
+
+  /* wall blueprint preview */
+  .wall-diagram-card{
+    background:linear-gradient(160deg, #3A2415 0%, #241407 100%);
+    border-radius:var(--radius-lg); padding:16px; margin-bottom:16px; position:relative; overflow:hidden;
+  }
+  .wall-diagram-card::before{
+    content:""; position:absolute; inset:0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.35) 0 1px, transparent 1px 20px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.35) 0 1px, transparent 1px 20px);
+    opacity:0.08; pointer-events:none;
+  }
+  .wd-label{ position:relative; z-index:1; color:#fff; font-size:12.5px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .wd-label .icon{ width:15px; height:15px; }
+  #wall-diagram{ position:relative; z-index:1; }
+  .diagram-placeholder{ color:rgba(255,255,255,0.55); font-size:12px; text-align:center; padding:30px 10px; }
+
+  /* print */
+  #print-area{ display:none; }
+  @media print{
+    body *{ visibility:hidden; }
+    #print-area, #print-area *{ visibility:visible; }
+    #print-area{ display:block; position:absolute; left:0; top:0; width:100%; padding:24px; }
+    .print-title{ font-size:20px; font-weight:800; margin-bottom:2px; }
+    .print-sub{ font-size:12px; color:#555; margin-bottom:18px; }
+    .print-hero{ border:2px solid #4A2E1C; border-radius:12px; padding:16px; margin-bottom:16px; }
+    .print-hero .plv{ font-size:12px; color:#555; }
+    .print-hero .pvv{ font-size:26px; font-weight:800; margin:4px 0; }
+    .print-stats{ display:flex; gap:12px; margin-top:10px; }
+    .print-stats div{ border:1px solid #ccc; border-radius:8px; padding:8px; flex:1; text-align:center; font-size:11px; }
+    .print-steps{ font-size:12px; line-height:1.9; border-top:1px solid #ccc; padding-top:12px; }
+    .print-footer{ margin-top:24px; font-size:10px; color:#999; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell" id="app-shell">
+
+  <!-- ================= SPLASH ================= -->
+  <div class="screen active" id="screen-splash">
+    <div class="auth-wrap" style="background:linear-gradient(160deg, var(--brown-mid) 0%, var(--brown-dark) 100%);">
+      <div class="construction-bg"></div>
+      <div class="construction-icon" data-icon="crane"></div>
+      <div class="auth-fg">
+        <div class="logo" data-icon="logo"></div>
+        <div class="appname">SiteCalc</div>
+        <div class="tagline">Site calculations. Simplified.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LOGIN ================= -->
+  <div class="screen" id="screen-login">
+    <div class="auth-wrap">
+      <div class="construction-bg"></div>
+      <div class="construction-icon" data-icon="crane"></div>
+      <div class="auth-fg">
+        <div class="logo" data-icon="logo"></div>
+        <div class="appname">SiteCalc</div>
+        <div class="tagline">Site calculations. Simplified.</div>
+        <div class="auth-card">
+          <h2>Enter your phone number</h2>
+          <p>We'll send you a one-time code to verify.</p>
+          <div class="field">
+            <label>Mobile number</label>
+            <div class="input-row">
+              <span style="color:var(--text-muted); font-weight:700;">+91</span>
+              <input id="login-phone" type="tel" inputmode="numeric" placeholder="98765 43210" maxlength="10">
+            </div>
+          </div>
+          <button class="primary-btn" style="margin-top:16px;" onclick="app.sendOtp()">Send OTP</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= OTP ================= -->
+  <div class="screen" id="screen-otp">
+    <div class="auth-wrap">
+      <div class="construction-bg"></div>
+      <div class="construction-icon" data-icon="crane"></div>
+      <div class="auth-fg">
+        <div class="logo" data-icon="logo"></div>
+        <div class="appname">SiteCalc</div>
+        <div class="tagline">Site calculations. Simplified.</div>
+        <div class="auth-card">
+          <h2>Verify your number</h2>
+          <p id="otp-sub">Enter the 4-digit code we sent you</p>
+          <div class="otp-row">
+            <input class="otp-box" id="otp-0" maxlength="1" inputmode="numeric" oninput="app.otpNext(0)" onkeydown="app.otpBack(event,0)">
+            <input class="otp-box" id="otp-1" maxlength="1" inputmode="numeric" oninput="app.otpNext(1)" onkeydown="app.otpBack(event,1)">
+            <input class="otp-box" id="otp-2" maxlength="1" inputmode="numeric" oninput="app.otpNext(2)" onkeydown="app.otpBack(event,2)">
+            <input class="otp-box" id="otp-3" maxlength="1" inputmode="numeric" oninput="app.otpNext(3)" onkeydown="app.otpBack(event,3)">
+          </div>
+          <button class="primary-btn" onclick="app.verifyOtp()">Verify &amp; Continue</button>
+          <div class="resend">Didn't get the code? <b>Resend</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= HOME ================= -->
+  <div class="screen" id="screen-home" data-nav="home">
+    <div class="header-brown">
+      <button class="pill-btn" style="position:absolute; top:16px; right:16px;" onclick="app.goto('help')" aria-label="Help and support"><span class="icon" data-icon="tool" style="width:14px;height:14px;"></span> Help</button>
+      <div class="greeting" id="home-greeting">Good Evening! Krishna</div>
+      <div class="title">What's the task for today?</div>
+    </div>
+    <div class="search-wrap">
+      <div class="search-bar-wrap">
+        <span class="icon" data-icon="search"></span>
+        <input id="home-search" type="text" placeholder="Search projects or calculators" autocomplete="off" oninput="app.runSearch(this.value)" onfocus="app.runSearch(this.value)">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+    <div class="content">
+      <div class="section-title">Recent Used</div>
+      <div class="recent-row" id="recent-row"></div>
+
+      <div class="section-title">All Calculations</div>
+      <div class="chip-row" id="calc-filter-row">
+        <div class="chip active" data-cat="all" onclick="app.filterCalculators('all', this)">All</div>
+        <div class="chip" data-cat="building" onclick="app.filterCalculators('building', this)">Building Construction</div>
+        <div class="chip" data-cat="infra" onclick="app.filterCalculators('infra', this)">Infrastructure</div>
+        <div class="chip" data-cat="metal" onclick="app.filterCalculators('metal', this)">Metal</div>
+      </div>
+      <div class="calc-grid" id="calc-grid"></div>
+    </div>
+  </div>
+
+  <!-- ================= BRICKWORK INPUT ================= -->
+  <div class="screen" id="screen-calc-brickwork" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Brick Work</div><div class="h2">IS-1200 | Part 4</div></div></div>
+    <div class="content">
+      <div class="wall-diagram-card">
+        <div class="wd-label"><span class="icon" data-icon="ruler"></span> Wall Preview</div>
+        <div id="wall-diagram"></div>
+      </div>
+      <div class="field-group">
+        <h3>Wall Dimensions</h3>
+        <div class="field"><label>Number of Walls</label><div class="input-row"><input id="bw-walls" type="number" value="3" oninput="app.renderWallDiagram()"><span class="unit">walls</span></div></div>
+        <div class="field"><label>Wall Length (ft)</label><div class="input-row"><input id="bw-length" type="number" value="24.5" oninput="app.renderWallDiagram()"><span class="unit">ft <button class="mic-btn" aria-label="Voice input"><span class="icon" data-icon="mic"></span></button></span></div></div>
+        <div class="field"><label>Wall Height (ft)</label><div class="input-row"><input id="bw-height" type="number" value="10" oninput="app.renderWallDiagram()"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Wall thickness (m)</label>
+          <div class="input-row"><select id="bw-thickness" onchange="app.renderWallDiagram()">
+            <option value="0.115">0.115 (4.5 inch / half brick)</option>
+            <option value="0.23" selected>0.23 (9 inch / one brick)</option>
+            <option value="0.3">0.30 (non-standard)</option>
+          </select></div>
+        </div>
+      </div>
+      <div class="field-group">
+        <h3>Deductions (IS-1200)</h3>
+        <div id="bw-openings"></div>
+        <button class="add-row" onclick="app.addOpening()"><span class="plus"><span class="icon" data-icon="plus"></span></span> Add Opening</button>
+      </div>
+      <div class="field-group adv-panel collapsed" id="bw-advanced">
+        <h3 class="adv-toggle" onclick="document.getElementById('bw-advanced').classList.toggle('collapsed')">
+          <span style="display:flex; align-items:center; gap:8px;"><span class="icon" data-icon="tool" style="width:16px;height:16px;"></span> Advanced Options</span>
+          <span class="icon adv-chevron" data-icon="chevron-down"></span>
+        </h3>
+        <div class="adv-body">
+          <div class="field"><label>Brick Size — L × W × T (mm)</label>
+            <div style="display:flex; gap:8px;">
+              <div class="input-row"><input id="bw-brick-l" type="number" value="230"></div>
+              <div class="input-row"><input id="bw-brick-w" type="number" value="115"></div>
+              <div class="input-row"><input id="bw-brick-t" type="number" value="75"></div>
+            </div>
+          </div>
+          <div class="field"><label>Mortar Ratio (Cement : Sand)</label>
+            <div class="input-row"><span class="unit">1 :</span><input id="bw-mortar-sand" type="number" value="6"></div>
+          </div>
+          <div class="field"><label>Wastage %</label><div class="input-row"><input id="bw-wastage" type="number" value="10"><span class="unit">%</span></div></div>
+        </div>
+      </div>
+      <button class="primary-btn" onclick="app.calcBrickwork()">Calculate Brickwork</button>
+    </div>
+  </div>
+
+  <!-- ================= CONCRETE INPUT ================= -->
+  <div class="screen" id="screen-calc-concrete" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Concrete</div><div class="h2">M15 – M30 Mix</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Work Type</h3>
+        <div class="chip-row" id="cc-worktype">
+          <div class="chip active" data-val="Footing">Footing</div>
+          <div class="chip" data-val="Column">Column</div>
+          <div class="chip" data-val="Beam">Beam</div>
+          <div class="chip" data-val="Slab">Slab</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <h3>Dimensions</h3>
+        <div class="field"><label>Length (ft)</label><div class="input-row"><input id="cc-length" type="number" value="18"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Width (ft)</label><div class="input-row"><input id="cc-width" type="number" value="2"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Depth / Thickness (ft)</label><div class="input-row"><input id="cc-depth" type="number" value="1.5"><span class="unit">ft</span></div></div>
+      </div>
+      <div class="field-group">
+        <h3>Mix &amp; Wastage</h3>
+        <div class="field"><label>Concrete Grade</label><div class="input-row"><select id="cc-grade">
+          <option value="M15">M15 (1:2:4)</option>
+          <option value="M20" selected>M20 (1:1.5:3)</option>
+          <option value="M25">M25 (1:1:2)</option>
+          <option value="M30">M30 (Design mix, ratio approx.)</option>
+        </select></div></div>
+        <div class="field"><label>Wastage %</label><div class="input-row"><input id="cc-wastage" type="number" value="5"><span class="unit">%</span></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.calcConcrete()">Calculate Concrete</button>
+    </div>
+  </div>
+
+  <!-- ================= EXCAVATION INPUT ================= -->
+  <div class="screen" id="screen-calc-excavation" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Excavation</div><div class="h2">+ Truck Trips</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Pit Dimensions</h3>
+        <div class="field"><label>Length (ft)</label><div class="input-row"><input id="ex-length" type="number" value="40"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Width (ft)</label><div class="input-row"><input id="ex-width" type="number" value="30"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Depth (ft)</label><div class="input-row"><input id="ex-depth" type="number" value="5"><span class="unit">ft</span></div></div>
+      </div>
+      <div class="field-group">
+        <h3>Soil &amp; Transport</h3>
+        <div class="field"><label>Soil Type</label><div class="input-row"><select id="ex-soil">
+          <option value="15">Ordinary Soil (+15% bulkage)</option>
+          <option value="20" selected>Hard Soil / Murrum (+20% bulkage)</option>
+          <option value="25">Soft / Loose Soil (+25% bulkage)</option>
+          <option value="30">Rock — blasting (+30% bulkage)</option>
+        </select></div></div>
+        <div class="field"><label>Truck Capacity (cft)</label><div class="input-row"><input id="ex-truck" type="number" value="100"><span class="unit">cft</span></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.calcExcavation()">Calculate Excavation</button>
+    </div>
+  </div>
+
+  <!-- ================= BBS INPUT ================= -->
+  <div class="screen" id="screen-calc-bbs" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Steel / BBS</div><div class="h2">IS-2502</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Element</h3>
+        <div class="chip-row" id="bbs-element">
+          <div class="chip active" data-val="Column">Column</div>
+          <div class="chip" data-val="Beam">Beam</div>
+          <div class="chip" data-val="Slab">Slab</div>
+          <div class="chip" data-val="Footing">Footing</div>
+        </div>
+      </div>
+      <div id="bbs-marks"></div>
+      <button class="add-row" style="margin-bottom:16px;" onclick="app.addBarMark()"><span class="plus"><span class="icon" data-icon="plus"></span></span> Add Bar Mark</button>
+      <button class="primary-btn" onclick="app.calcBbs()">Calculate Steel Weight</button>
+    </div>
+  </div>
+
+  <!-- ================= TILE INPUT ================= -->
+  <div class="screen" id="screen-calc-tile" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Tile Calculator</div><div class="h2">Floor and Wall</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Surface</h3>
+        <div class="chip-row" id="tl-surface">
+          <div class="chip active" data-val="Floor">Floor</div>
+          <div class="chip" data-val="Wall">Wall</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <h3>Room Dimensions</h3>
+        <div class="field"><label>Length (ft)</label><div class="input-row"><input id="tl-length" type="number" value="14"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Width / Height (ft)</label><div class="input-row"><input id="tl-width" type="number" value="12"><span class="unit">ft</span></div></div>
+      </div>
+      <div class="field-group">
+        <h3>Tile &amp; Wastage</h3>
+        <div class="field"><label>Tile Size</label><div class="input-row"><select id="tl-size">
+          <option value="600">600 × 600 mm</option>
+          <option value="300">300 × 300 mm</option>
+          <option value="800">800 × 800 mm</option>
+        </select></div></div>
+        <div class="field"><label>Wastage %</label><div class="input-row"><input id="tl-wastage" type="number" value="10"><span class="unit">%</span></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.calcTile()">Calculate Tiles</button>
+    </div>
+  </div>
+
+  <!-- ================= RCC SLAB INPUT ================= -->
+  <div class="screen" id="screen-calc-rcc" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">RCC Slab</div><div class="h2">IS-456</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Slab Dimensions</h3>
+        <div class="field"><label>Length (ft)</label><div class="input-row"><input id="rc-length" type="number" value="30"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Width (ft)</label><div class="input-row"><input id="rc-width" type="number" value="25"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Thickness</label>
+          <div class="chip-row" id="rc-thickness">
+            <div class="chip" data-val="125">125mm</div>
+            <div class="chip active" data-val="150">150mm</div>
+            <div class="chip" data-val="175">175mm</div>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <h3>Mix</h3>
+        <div class="field"><label>Concrete Grade</label><div class="input-row"><select id="rc-grade">
+          <option value="M25" selected>M25 (1:1:2)</option>
+          <option value="M20">M20 (1:1.5:3)</option>
+        </select></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.calcRcc()">Calculate RCC Slab</button>
+    </div>
+  </div>
+
+  <!-- ================= PLASTER INPUT ================= -->
+  <div class="screen" id="screen-calc-plaster" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Plaster</div><div class="h2">Wall &amp; Ceiling</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Surface</h3>
+        <div class="chip-row" id="pl-surface">
+          <div class="chip active" data-val="Wall">Wall</div>
+          <div class="chip" data-val="Ceiling">Ceiling</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <h3>Dimensions</h3>
+        <div class="field"><label>Length (ft)</label><div class="input-row"><input id="pl-length" type="number" value="20"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Height / Width (ft)</label><div class="input-row"><input id="pl-height" type="number" value="10"><span class="unit">ft</span></div></div>
+      </div>
+      <div class="field-group">
+        <h3>Mix &amp; Thickness</h3>
+        <div class="field"><label>Mix Ratio (Cement : Sand)</label><div class="input-row"><select id="pl-ratio">
+          <option value="4">1 : 4</option>
+          <option value="6" selected>1 : 6</option>
+        </select></div></div>
+        <div class="field"><label>Thickness</label><div class="chip-row" id="pl-thickness">
+          <div class="chip active" data-val="12">12mm (single coat)</div>
+          <div class="chip" data-val="20">20mm (two coat)</div>
+        </div></div>
+        <div class="field"><label>Wastage %</label><div class="input-row"><input id="pl-wastage" type="number" value="10"><span class="unit">%</span></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.calcPlaster()">Calculate Plaster</button>
+    </div>
+  </div>
+
+  <!-- ================= SHUTTERING INPUT ================= -->
+  <div class="screen" id="screen-calc-shuttering" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Shuttering</div><div class="h2">Formwork Area</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Element</h3>
+        <div class="chip-row" id="sh-element">
+          <div class="chip active" data-val="Column">Column</div>
+          <div class="chip" data-val="Beam">Beam</div>
+          <div class="chip" data-val="Slab">Slab</div>
+          <div class="chip" data-val="Footing">Footing</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <h3>Dimensions</h3>
+        <div class="field"><label>Contact Length (ft)</label><div class="input-row"><input id="sh-length" type="number" value="12"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Height / Depth (ft)</label><div class="input-row"><input id="sh-height" type="number" value="10"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Number of Faces</label><div class="input-row"><select id="sh-faces">
+          <option value="2">2 faces (wall/footing)</option>
+          <option value="3">3 faces (beam)</option>
+          <option value="4" selected>4 faces (column)</option>
+        </select></div></div>
+      </div>
+      <div class="field-group">
+        <h3>Wastage</h3>
+        <div class="field"><label>Wastage %</label><div class="input-row"><input id="sh-wastage" type="number" value="5"><span class="unit">%</span></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.calcShuttering()">Calculate Shuttering</button>
+    </div>
+  </div>
+
+  <!-- ================= WATERPROOFING INPUT ================= -->
+  <div class="screen" id="screen-calc-waterproof" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Waterproofing</div><div class="h2">Terrace &amp; Wet Areas</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Area</h3>
+        <div class="field"><label>Length (ft)</label><div class="input-row"><input id="wp-length" type="number" value="25"><span class="unit">ft</span></div></div>
+        <div class="field"><label>Width (ft)</label><div class="input-row"><input id="wp-width" type="number" value="18"><span class="unit">ft</span></div></div>
+      </div>
+      <div class="field-group">
+        <h3>Treatment</h3>
+        <div class="field"><label>Treatment Type</label><div class="input-row"><select id="wp-treatment">
+          <option value="cementitious">Cementitious Coating (2 coats)</option>
+          <option value="liquid">Liquid Membrane (2 coats)</option>
+          <option value="app">APP Membrane (torch-on)</option>
+          <option value="bbc">Brick Bat Coba</option>
+        </select></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.calcWaterproof()">Calculate Waterproofing</button>
+    </div>
+  </div>
+
+  <!-- ================= CONVERTER ================= -->
+  <div class="screen" id="screen-converter" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Unit Converter</div><div class="h2">18 units, 5 categories</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <div class="field"><label>Category</label><div class="input-row"><select id="cv-cat" onchange="app.rebuildConverterUnits()">
+          <option value="volume">Volume</option>
+          <option value="area">Area</option>
+          <option value="length">Length</option>
+          <option value="weight">Weight</option>
+          <option value="cement">Cement</option>
+        </select></div></div>
+        <div class="field"><label>From</label>
+          <div class="input-row"><input id="cv-value" type="number" value="1" oninput="app.runConverter()"><select id="cv-from" style="max-width:46%; text-align:right;" onchange="app.runConverter()"></select></div>
+        </div>
+        <div style="text-align:center; padding:2px 0;"><span class="icon" data-icon="swap" style="width:20px;height:20px;color:var(--text-muted); display:inline-flex;"></span></div>
+        <div class="field"><label>To</label>
+          <div class="input-row" style="background:var(--peach-soft);"><input id="cv-result" type="text" disabled style="color:var(--brown-dark); font-weight:800;"><select id="cv-to" style="max-width:46%; text-align:right;" onchange="app.runConverter()"></select></div>
+        </div>
+      </div>
+      <div class="section-title">Quick Reference</div>
+      <div class="calc-grid" id="cv-quickref"></div>
+    </div>
+  </div>
+
+  <!-- ================= ESTIMATE BUILDER ================= -->
+  <div class="screen" id="screen-estimate-builder" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Project Estimate</div><div class="h2">Add work items, then calculate</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Work Items</h3>
+        <div id="est-items"></div>
+        <button class="add-row" onclick="app.addEstimateItem()"><span class="plus"><span class="icon" data-icon="plus"></span></span> Add Work Item</button>
+      </div>
+      <div class="field-group">
+        <h3>Contingency</h3>
+        <div class="field"><label>Contingency Buffer</label><div class="input-row"><input id="est-contingency" type="number" value="10"><span class="unit">%</span></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.calcEstimate()">Calculate Estimate</button>
+    </div>
+  </div>
+
+  <!-- ================= SHARED RESULT SCREEN ================= -->
+  <div class="screen" id="screen-result" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1" id="res-title">Result</div><div class="h2" id="res-subtitle">—</div></div></div>
+    <div class="content" id="res-content"></div>
+  </div>
+
+  <!-- ================= ATTACH CALC TO PROJECT PHASE ================= -->
+  <div class="screen" id="screen-attach" data-nav="home">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Add to Project</div><div class="h2">Attach this calculation to a phase</div></div></div>
+    <div class="content">
+      <div class="field-group" id="attach-summary"></div>
+      <div class="field-group">
+        <h3>Choose Project &amp; Phase</h3>
+        <div class="field"><label>Project</label><div class="input-row"><select id="attach-project" onchange="app.rebuildAttachPhases()"></select></div></div>
+        <div class="field"><label>Phase / Floor</label><div class="input-row"><select id="attach-phase"></select></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.confirmAttach()"><span class="icon" data-icon="folder" style="width:16px;height:16px;"></span> Attach to Phase</button>
+    </div>
+  </div>
+
+  <!-- ================= PROJECTS LIST ================= -->
+  <div class="screen" id="screen-projects" data-nav="projects">
+    <div class="header-flat between">
+      <div class="htext"><div class="h1">My Projects</div></div>
+      <button class="pill-btn" onclick="app.goto('new-project')"><span class="icon" data-icon="plus" style="width:14px;height:14px;"></span> New</button>
+    </div>
+    <div class="content" id="projects-list"></div>
+  </div>
+
+  <!-- ================= PROJECT OVERVIEW ================= -->
+  <div class="screen" id="screen-project-overview" data-nav="projects">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1" id="po-name">Project</div><div class="h2"><span class="icon" data-icon="pin" style="width:12px;height:12px;"></span> <span id="po-loc">—</span></div></div></div>
+    <div class="content" id="po-content"></div>
+  </div>
+
+  <!-- ================= FLOOR DETAIL ================= -->
+  <div class="screen" id="screen-floor-detail" data-nav="projects">
+    <div class="header-flat"><button class="back" onclick="app.closeFloorDetail()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1" id="fd-name">Floor</div><div class="h2" id="fd-project">—</div></div></div>
+    <div class="content" id="fd-content"></div>
+  </div>
+
+  <!-- ================= EDIT BUDGET & TIMELINE ================= -->
+  <div class="screen" id="screen-edit-budget" data-nav="projects">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Budget &amp; Timeline</div><div class="h2" id="eb-name">—</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Budget</h3>
+        <div class="field"><label for="eb-spent">Amount Spent (₹)</label><div class="input-row"><input id="eb-spent" type="number"></div></div>
+        <div class="field"><label for="eb-total">Total Budget (₹)</label><div class="input-row"><input id="eb-total" type="number"></div></div>
+      </div>
+      <div class="field-group">
+        <h3>Timeline</h3>
+        <div class="field"><label for="eb-start">Start Date</label><div class="input-row"><input id="eb-start" type="date"></div></div>
+        <div class="field"><label for="eb-end">Expected End Date</label><div class="input-row"><input id="eb-end" type="date"></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.saveBudgetTimeline()">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- ================= PROJECT MATERIALS / STAGE ================= -->
+  <div class="screen" id="screen-project-stage" data-nav="projects">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Materials &amp; Stage</div><div class="h2" id="ps-name">—</div></div></div>
+    <div class="content" id="ps-content"></div>
+  </div>
+
+  <!-- ================= NEW PROJECT ================= -->
+  <div class="screen" id="screen-new-project" data-nav="projects">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">New Project</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Project Details</h3>
+        <div class="field"><label for="np-name">Project Name</label><div class="input-row"><input id="np-name" placeholder="e.g. Krishna G+2 House"></div></div>
+        <div class="field"><label for="np-loc">Location</label><div class="input-row"><input id="np-loc" placeholder="e.g. Madhurawada, Vizag"><span class="icon" data-icon="pin" style="width:16px;height:16px;color:var(--text-muted);"></span></div></div>
+        <div class="field"><label>Project Type</label><div class="chip-row" id="np-type">
+          <div class="chip active" data-val="Residential">Residential</div>
+          <div class="chip" data-val="Commercial">Commercial</div>
+        </div></div>
+        <div class="field"><label for="np-floors">Number of Floors</label><div class="input-row"><input id="np-floors" type="number" value="2"><span class="unit">floors</span></div></div>
+      </div>
+      <div class="field-group">
+        <h3>Budget &amp; Timeline</h3>
+        <div class="field"><label for="np-budget">Estimated Budget (₹)</label><div class="input-row"><input id="np-budget" type="number" value="2000000"><span class="unit">₹</span></div></div>
+        <div class="field"><label for="np-start">Start Date</label><div class="input-row"><input id="np-start" type="date"></div></div>
+        <div class="field"><label for="np-end">Expected End Date</label><div class="input-row"><input id="np-end" type="date"></div></div>
+      </div>
+      <button class="primary-btn" onclick="app.createProject()">Create Project</button>
+    </div>
+  </div>
+
+  <!-- ================= HISTORY LIST ================= -->
+  <div class="screen" id="screen-history" data-nav="history">
+    <div class="header-flat"><div class="htext"><div class="h1">Recent Calculations</div></div></div>
+    <div class="content" id="history-list"></div>
+  </div>
+
+  <!-- ================= PROFILE ================= -->
+  <div class="screen" id="screen-profile" data-nav="profile">
+    <div class="content" style="padding-top:24px;">
+      <div class="profile-head"><div class="avatar-lg">K</div><div><div style="font-size:16px; font-weight:800;">Krishna Rao</div><div style="font-size:12.5px; color:var(--text-muted);">+91 98765 43210</div></div></div>
+
+      <div class="settings-section-label">Work Profile</div>
+      <div class="field-group">
+        <div class="settings-row"><div class="slabel2">My Role</div>
+          <select class="settings-select" onchange="app.updateSetting('role',this.value)">
+            <option>Site Engineer</option>
+            <option>Contractor</option>
+            <option>Project Manager</option>
+            <option>Estimator</option>
+          </select>
+        </div>
+        <div class="settings-row" style="cursor:pointer;" onclick="app.toast('You can add this from Company Details', true)"><div class="slabel2">Company Details</div><span class="icon" data-icon="chevron-right" style="width:14px;height:14px;"></span></div>
+        <div class="settings-row" style="border-bottom:none; cursor:pointer;" onclick="app.toast('Signature capture coming soon', true)"><div class="slabel2">Signature</div><span class="icon" data-icon="chevron-right" style="width:14px;height:14px;"></span></div>
+      </div>
+
+      <div class="settings-section-label">Standards &amp; Units</div>
+      <div class="field-group">
+        <div class="settings-row"><div class="slabel2">Region</div>
+          <select class="settings-select" onchange="app.updateSetting('region',this.value)">
+            <option>India</option><option>UAE</option><option>Nepal</option>
+          </select>
+        </div>
+        <div class="settings-row"><div class="slabel2">City / Location</div>
+          <select class="settings-select" onchange="app.updateSetting('city',this.value)">
+            <option>Chennai</option><option>Visakhapatnam</option><option>Hyderabad</option><option>Bengaluru</option><option>Coimbatore</option>
+          </select>
+        </div>
+        <div class="settings-row"><div class="slabel2">Unit System</div>
+          <select class="settings-select" onchange="app.updateSetting('unitSystem',this.value)">
+            <option>Metric</option><option>Imperial</option>
+          </select>
+        </div>
+        <div class="settings-row" style="border-bottom:none;"><div class="slabel2">Currency</div>
+          <select class="settings-select" onchange="app.updateSetting('currency',this.value)">
+            <option>₹ INR</option><option>$ USD</option><option>AED</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section-label">App</div>
+      <div class="field-group">
+        <div class="settings-row"><div class="slabel2">Default Wastage %</div><div class="svalue">10% <span class="icon" data-icon="chevron-right" style="width:14px;height:14px;"></span></div></div>
+        <div class="settings-row"><div class="slabel2">Dark Mode</div><button class="toggle" id="dark-toggle" onclick="app.toggleDark()"><div class="knob"></div></button></div>
+        <div class="settings-row"><div class="slabel2">Language</div>
+          <select class="settings-select" onchange="app.updateSetting('language',this.value)">
+            <option>English</option><option disabled>Telugu (coming soon)</option><option disabled>Hindi (coming soon)</option>
+          </select>
+        </div>
+        <div class="settings-row"><div class="slabel2">Offline Data &amp; Sync</div><div class="svalue" id="sync-status">Synced</div></div>
+        <div class="settings-row" style="cursor:pointer;" onclick="app.goto('help')"><div class="slabel2">Help &amp; Support</div><span class="icon" data-icon="chevron-right" style="width:14px;height:14px;"></span></div>
+        <div class="settings-row" style="border-bottom:none;"><div class="slabel2">About SiteCalc</div><div class="svalue">v1.0</div></div>
+      </div>
+      <button class="secondary-btn" style="border-color:var(--red); color:var(--red);" onclick="app.logout()">Log Out</button>
+    </div>
+  </div>
+
+  <!-- ================= HELP & SUPPORT ================= -->
+  <div class="screen" id="screen-help" data-nav="profile">
+    <div class="header-flat"><button class="back" onclick="app.back()" aria-label="Go back"><span class="icon" data-icon="arrow-left"></span></button><div class="htext"><div class="h1">Help &amp; Support</div><div class="h2">How SiteCalc works</div></div></div>
+    <div class="content">
+      <div class="field-group">
+        <h3>Getting Started</h3>
+        <div class="help-step"><div class="hs-num">1</div><div><div class="hs-title">Pick a calculator</div><div class="hs-text">From Home, tap any calculator — Brickwork, Concrete, Steel/BBS, and more. Use the category chips or search bar to find it faster.</div></div></div>
+        <div class="help-step"><div class="hs-num">2</div><div><div class="hs-title">Enter your site measurements</div><div class="hs-text">Type in dimensions in feet or metres. Some calculators show a live blueprint preview as you type.</div></div></div>
+        <div class="help-step"><div class="hs-num">3</div><div><div class="hs-title">Get an instant result</div><div class="hs-text">See the final quantity right away, plus a full step-by-step working so you can verify every number.</div></div></div>
+        <div class="help-step"><div class="hs-num">4</div><div><div class="hs-title">Share or save it</div><div class="hs-text">Tap Share via WhatsApp to send the result to your supplier or client, or tap PDF to save a measurement sheet.</div></div></div>
+        <div class="help-step" style="margin-bottom:0;"><div class="hs-num">5</div><div><div class="hs-title">Track it on a project</div><div class="hs-text">From any result, tap "Add to Project Phase" to attach it to a floor — it'll show up right there in that project's progress.</div></div></div>
+      </div>
+      <div class="field-group">
+        <h3>Frequently Asked Questions</h3>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Does SiteCalc work offline? <span class="icon" data-icon="chevron-down"></span></div>
+          <div class="faq-a">Yes. Every calculation runs on your device — no internet connection needed. You'll only need data to open WhatsApp or view a shared link.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How accurate are the calculations? <span class="icon" data-icon="chevron-down"></span></div>
+          <div class="faq-a">Formulas follow standard IS-1200, IS-2502 and IS-456 practice. Orange "Audit Check" notes flag any assumption worth double-checking against your site conditions before ordering material.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I use a custom brick size or mortar ratio? <span class="icon" data-icon="chevron-down"></span></div>
+          <div class="faq-a">Yes — open the Brickwork calculator and expand "Advanced Options" to set a custom brick size, mortar ratio, and wastage percentage.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I delete a project or calculation? <span class="icon" data-icon="chevron-down"></span></div>
+          <div class="faq-a">Swipe or tap the trash icon on any project card or history entry. You'll always get a confirmation before anything is removed.</div>
+        </div>
+        <div class="faq-item" style="padding-bottom:0;">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is SiteCalc free? <span class="icon" data-icon="chevron-down"></span></div>
+          <div class="faq-a">Yes — every calculator and feature in SiteCalc is free to use, with no locked or paid options.</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <h3>Still need help?</h3>
+        <div class="settings-row" style="border-bottom:none;"><div class="slabel2">Email</div><div class="svalue">help@sitecalc.app</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav" id="bottom-nav">
+    <button class="nav-item" data-nav="home" onclick="app.goto('home', true)"><span class="icon" data-icon="home"></span><span>Home</span></button>
+    <button class="nav-item" data-nav="projects" onclick="app.goto('projects', true)"><span class="icon" data-icon="folder"></span><span>Projects</span></button>
+    <button class="nav-item" data-nav="history" onclick="app.goto('history', true)"><span class="icon" data-icon="clock"></span><span>History</span></button>
+    <button class="nav-item" data-nav="profile" onclick="app.goto('profile', true)"><span class="icon" data-icon="user"></span><span>Profile</span></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="icon" data-icon="check"></span><span id="toast-text">Saved</span></div>
+<div id="print-area"></div>
+
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon"><span class="icon" data-icon="warning"></span></div>
+    <div class="confirm-title" id="confirm-title">Delete this?</div>
+    <div class="confirm-text" id="confirm-text">This cannot be undone.</div>
+    <div class="confirm-actions">
+      <button class="secondary-btn" onclick="app.closeConfirm()">Cancel</button>
+      <button class="primary-btn" style="background:var(--red);" id="confirm-action-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ICONS — uniform outline style, stroke=currentColor
+   ============================================================ */
+const ICONS = {
+  logo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 L12 4 L21 20 Z"/><path d="M8 20 L12 12 L16 20"/></svg>',
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg>',
+  folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5h6l2 2h10v10H3z"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.5"/></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-4 3.5-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>',
+  brick: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="8" height="5"/><rect x="13" y="5" width="8" height="5"/><rect x="7" y="12" width="8" height="5"/><rect x="-1" y="12" width="6" height="5"/><rect x="17" y="12" width="6" height="5"/></svg>',
+  concrete: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 L9 9 L14 20 Z"/><path d="M14 15h6"/><path d="M17 15v5"/></svg>',
+  excavation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c3-1 5-1 8 0s5 1 8 0"/><path d="M12 4v10"/><path d="M8 8l4 6 4-6"/></svg>',
+  steel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12M6 20h12M12 4v16M8 4v3M16 4v3M8 17v3M16 17v3"/></svg>',
+  tile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>',
+  slab: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12 L12 6 L22 12 L12 18 Z"/></svg>',
+  estimate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="16" height="19" rx="2"/><line x1="7" y1="7" x2="17" y2="7"/><line x1="7" y1="12" x2="9" y2="12"/><line x1="11" y1="12" x2="13" y2="12"/><line x1="15" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="9" y2="16"/><line x1="11" y1="16" x2="13" y2="16"/><line x1="15" y1="16" x2="17" y2="16"/></svg>',
+  converter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/></svg>',
+  swap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16"/><path d="M8 8l4-4 4 4"/><path d="M8 16l4 4 4-4"/></svg>',
+  door: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18"/><circle cx="14.5" cy="12" r="0.8" fill="currentColor" stroke="none"/></svg>',
+  window: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="4" y1="12" x2="20" y2="12"/></svg>',
+  opening: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 2"><rect x="4" y="4" width="16" height="16"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="4" x2="12" y2="20"/><line x1="4" y1="12" x2="20" y2="12"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>',
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="22"/></svg>',
+  whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.9 1.3-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.8-2.1 1-2.4c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.6.7 1.9.8 2 .1.2.1.4 0 .6-.1.2-.2.3-.3.5-.2.2-.3.3-.5.5-.2.2-.3.4-.1.7.2.3.7 1.2 1.6 1.9 1.1.9 2 1.2 2.3 1.3.3.1.5.1.6-.1.2-.2.7-.8.9-1 .2-.3.4-.2.6-.1.2.1 1.5.7 1.8.8.3.1.4.2.5.3.1.2.1.7-.1 1.2z"/></svg>',
+  pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>',
+  'chevron-down': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  'chevron-right': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  'arrow-left': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>',
+  warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17.5" r="0.6" fill="currentColor" stroke="none"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.2"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  tool: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 1 5.4-5.4L14.7 6.3z"/></svg>',
+  plaster: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="1"/><path d="M6 10v10M18 10v10M6 20h12"/></svg>',
+  shutter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="13" x2="20" y2="13"/><line x1="4" y1="18" x2="20" y2="18"/></svg>',
+  waterdrop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4 5 6.5 8.4 6.5 11.5a6.5 6.5 0 1 1-13 0C5.5 11.4 8 8 12 3z"/></svg>',
+  building: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18"/><line x1="9" y1="7" x2="9" y2="7.01"/><line x1="15" y1="7" x2="15" y2="7.01"/><line x1="9" y1="11" x2="9" y2="11.01"/><line x1="15" y1="11" x2="15" y2="11.01"/><line x1="9" y1="15" x2="15" y2="15"/></svg>',
+  pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg>',
+  globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.3 3.8 5.2 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.2-3.8-8.5S9.5 5.8 12 3.5z"/></svg>',
+  ruler: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="1"/><line x1="7" y1="8" x2="7" y2="11"/><line x1="11" y1="8" x2="11" y2="11"/><line x1="15" y1="8" x2="15" y2="11"/><line x1="19" y1="8" x2="19" y2="11"/></svg>',
+  dollar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M16.5 6.5a3.5 3.5 0 0 0-3.5-1.5h-2A3 3 0 0 0 8 8c0 4 8 2 8 6a3 3 0 0 1-3 3h-2a3.5 3.5 0 0 1-3.5-1.5"/></svg>',
+  restore: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.5 7 1-5.2 5 1.3 7-6.1-3.4L5.9 21.5l1.3-7-5.2-5 7-1z"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>',
+  crane: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="22" x2="6" y2="4"/><line x1="6" y1="4" x2="19" y2="4"/><line x1="6" y1="8" x2="3" y2="8"/><line x1="19" y1="4" x2="19" y2="8"/><line x1="2" y1="22" x2="10" y2="22"/><line x1="6" y1="12" x2="10" y2="12"/></svg>'
+};
+function mountIcons(root){
+  (root||document).querySelectorAll('[data-icon]').forEach(el=>{
+    const name = el.getAttribute('data-icon');
+    if(ICONS[name]) el.innerHTML = ICONS[name];
+  });
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  navStack: ['screen-splash'],
+  openings: [{type:'Door', w:0.9, h:2.1}, {type:'Window', w:1.2, h:1.2}],
+  barMarks: [{mark:'C1-01', dia:16, shape:'Straight', nos:4, len:3.6}, {mark:'C1-02', dia:8, shape:'Stirrup', nos:18, len:1.6}],
+  estimateItems: [
+    {label:'Brickwork – North Wall', qty:'2,847 bricks', cost:18400},
+    {label:'Concrete – Footing F1–F6', qty:'2.7 m³', cost:42000},
+    {label:'Steel – Column C1', qty:'284 kg', cost:22700}
+  ],
+  lastResult: null,
+  activeProjectId: null,
+  darkMode: false,
+  activeCategory: 'all',
+  settings: { role:'Site Engineer', region:'India', city:'Chennai', unitSystem:'Metric', currency:'₹ INR', language:'English' },
+  projects: [
+    { id:'p1', name:'Krishna G+2 House', location:'Madhurawada, Vizag', amountLabel:'₹24.6L',
+      budgetSpent: 1180000, budgetTotal: 2460000, startDate:'12 Jan 2025', endDate:'30 Nov 2025',
+      floors:[
+        {name:'Ground Floor', items:[
+          {label:'Excavation & PCC', done:true}, {label:'Footing & Column', done:true},
+          {label:'Plinth Beam', done:true}, {label:'Ground Floor Slab', done:true}
+        ]},
+        {name:'First Floor', items:[
+          {label:'Columns', done:true}, {label:'Brickwork', done:false},
+          {label:'Electrical Conduiting', done:false}, {label:'Slab', done:false}
+        ]},
+        {name:'Second Floor', items:[
+          {label:'Columns', done:false}, {label:'Slab', done:false}
+        ]}
+      ],
+      team:[{initials:'KR', name:'Krishna Rao', role:'Owner', phone:'+91 98480 22110'}],
+      currentStageLabel:'First Floor Brick work',
+      stages:[{key:'pcc',label:'PCC',done:true},{key:'plinth',label:'Plinth',done:true},{key:'brick',label:'Brickwork',current:true},{key:'slab',label:'Slab',done:false},{key:'finish',label:'Finish',done:false}],
+      materials:[
+        {name:'Red Bricks', qty:'2,847 nos', status:'out'},
+        {name:'Cement (OPC 53)', qty:'4.2 bags', status:'out'},
+        {name:'River Sand', qty:'0.68 m³', status:'ord'}
+      ]
+    },
+    { id:'p2', name:'Sharma Residency', location:'Gajuwaka, Vizag', amountLabel:'₹18.2L',
+      budgetSpent: 400000, budgetTotal:1820000, startDate:'3 Mar 2025', endDate:'20 Dec 2025',
+      floors:[{name:'Foundation', items:[
+        {label:'Excavation', done:true}, {label:'PCC', done:false}, {label:'Footing', done:false}
+      ]}],
+      team:[{initials:'SR', name:'Suresh Reddy', role:'Owner', phone:'+91 90000 11122'}],
+      currentStageLabel:'Foundation PCC',
+      stages:[{key:'pcc',label:'PCC',current:true},{key:'plinth',label:'Plinth',done:false},{key:'brick',label:'Brickwork',done:false},{key:'slab',label:'Slab',done:false},{key:'finish',label:'Finish',done:false}],
+      materials:[{name:'PCC Mix (1:4:8)', qty:'12 m³', status:'ord'}]
+    },
+    { id:'p3', name:'Costal Commercial', location:'Beach Road, Vizag', amountLabel:'₹67.4L',
+      budgetSpent: 500000, budgetTotal:6740000, startDate:'1 Jun 2025', endDate:'15 Mar 2026',
+      floors:[{name:'Estimation', items:[{label:'Quantity Takeoff', done:false}]}],
+      team:[{initials:'KR', name:'Krishna Rao', role:'Estimator', phone:'+91 98480 22110'}],
+      currentStageLabel:'Estimation Phase',
+      stages:[{key:'est',label:'Estimate',current:true},{key:'pcc',label:'PCC',done:false},{key:'brick',label:'Brickwork',done:false},{key:'slab',label:'Slab',done:false},{key:'finish',label:'Finish',done:false}],
+      materials:[]
+    }
+  ],
+  history: []
+};
+
+/* ============================================================
+   CALCULATOR CATALOG — drives the home grid, filters and search
+   ============================================================ */
+const CALCULATORS = [
+  {id:'brickwork',   label:'Brickwork',             sub:'IS-1200',              icon:'brick',      cat:'building', go:'calc-brickwork',   status:'live'},
+  {id:'concrete',    label:'Concrete',               sub:'M15 – M30',            icon:'concrete',   cat:'building', go:'calc-concrete',    status:'live'},
+  {id:'rcc',         label:'RCC Slab',                sub:'IS-456',               icon:'slab',       cat:'building', go:'calc-rcc',         status:'live'},
+  {id:'plaster',     label:'Plaster',                 sub:'Wall & Ceiling',       icon:'plaster',    cat:'building', go:'calc-plaster',     status:'live'},
+  {id:'shuttering',  label:'Shuttering',              sub:'Formwork Area',        icon:'shutter',    cat:'building', go:'calc-shuttering',  status:'live'},
+  {id:'tile',        label:'Tile',                    sub:'Floor and Wall',       icon:'tile',       cat:'building', go:'calc-tile',        status:'live'},
+  {id:'waterproof',  label:'Waterproofing',           sub:'Terrace & Wet Areas',  icon:'waterdrop',  cat:'building', go:'calc-waterproof',  status:'live'},
+  {id:'excavation',  label:'Excavation',              sub:'+ Truck Trips',        icon:'excavation', cat:'infra',    go:'calc-excavation',  status:'live'},
+  {id:'bbs',         label:'Steel / BBS',             sub:'IS-2502',              icon:'steel',      cat:'metal',    go:'calc-bbs',         status:'live'},
+  {id:'estimate',    label:'Estimate',                sub:'Full Project',        icon:'estimate',   cat:'building', go:'estimate-builder', status:'live'},
+  {id:'converter',   label:'Converter',               sub:'Unit Converter',      icon:'converter',  cat:'building', go:'converter',        status:'live'}
+];
+const TYPE_TO_CALC = {
+  brickwork:'calc-brickwork', concrete:'calc-concrete', excavation:'calc-excavation', bbs:'calc-bbs',
+  tile:'calc-tile', rcc:'calc-rcc', plaster:'calc-plaster', shuttering:'calc-shuttering',
+  waterproof:'calc-waterproof', estimate:'estimate-builder'
+};
+function floorStats(f){
+  const items = f.items || [];
+  const total = items.length;
+  const done = items.filter(i=>i.done).length;
+  const status = total===0 ? 'Not started' : (done===total ? 'Complete' : (done>0 ? 'In progress' : 'Not started'));
+  return {done, total, status};
+}
+
+/* seed history entries by running real calcs so numbers are always consistent */
+function seedHistory(){
+  state.history = [
+    { type:'brickwork', title:'Brick Work', subtitle:'North Wall GF', time:'2 hrs ago', icon:'brick',
+      inputs:{walls:3,length:24.5,height:10,thickness:0.23,openings:[{type:'Door',w:0.9,h:2.1},{type:'Window',w:1.2,h:1.2}]} },
+    { type:'rcc', title:'RCC Slab', subtitle:'First Floor', time:'Yesterday', icon:'slab',
+      inputs:{length:30,width:25,thickness:150,grade:'M25'} },
+    { type:'bbs', title:'Steel BBS', subtitle:'Column C1', time:'2 days ago', icon:'steel',
+      inputs:{marks:[{mark:'C1-01',dia:16,shape:'Straight',nos:4,len:3.6},{mark:'C1-02',dia:8,shape:'Stirrup',nos:18,len:1.6}]} },
+    { type:'excavation', title:'Excavation', subtitle:'Foundation', time:'5 hrs ago', icon:'excavation',
+      inputs:{length:40,width:30,depth:5,soil:20,truck:100} }
+  ];
+  state.history.forEach(h=>{ h.result = computeForHistory(h.type, h.inputs); });
+}
+function computeForHistory(type, inp){
+  if(type==='brickwork') return computeBrickwork(inp.walls, inp.length, inp.height, inp.thickness, inp.openings, inp.wastage||10, inp.brickDims, inp.sandParts);
+  if(type==='rcc') return computeRcc(inp.length, inp.width, inp.thickness, inp.grade);
+  if(type==='bbs') return computeBbs(inp.marks);
+  if(type==='excavation') return computeExcavation(inp.length, inp.width, inp.depth, inp.soil, inp.truck);
+}
+
+/* ============================================================
+   UNIT CONVERSION TABLES
+   ============================================================ */
+const CONV = {
+  volume: { base:'cum', units:{
+    cum:{label:'Cubic Metres (cum)', f:1},
+    cft:{label:'Cubic Feet (cft)', f:0.0283168},
+    litre:{label:'Litres (l)', f:0.001},
+    gallon:{label:'US Gallons', f:0.00378541}
+  }},
+  area: { base:'sqm', units:{
+    sqm:{label:'Square Metres (sqm)', f:1},
+    sqft:{label:'Square Feet (sqft)', f:0.092903},
+    sqyd:{label:'Square Yards (sqyd)', f:0.836127},
+    acre:{label:'Acre', f:4046.86},
+    cent:{label:'Cent', f:40.4686}
+  }},
+  length: { base:'m', units:{
+    m:{label:'Metres (m)', f:1},
+    ft:{label:'Feet (ft)', f:0.3048},
+    inch:{label:'Inches (in)', f:0.0254},
+    cm:{label:'Centimetres (cm)', f:0.01}
+  }},
+  weight: { base:'kg', units:{
+    kg:{label:'Kilograms (kg)', f:1},
+    tonne:{label:'Tonnes (t)', f:1000},
+    quintal:{label:'Quintal (q)', f:100},
+    bag:{label:'Cement Bag (50kg)', f:50}
+  }},
+  cement: { base:'bag', units:{
+    bag:{label:'Cement Bags (50kg)', f:1},
+    kg:{label:'Kilograms (kg)', f:1/50},
+    cum:{label:'Cubic Metres loose', f:34.7}
+  }}
+};
+
+/* ============================================================
+   CALCULATION ENGINES
+   ============================================================ */
+function computeBrickwork(walls, lenFt, htFt, thicknessM, openings, wastagePct, brickDims, sandParts){
+  brickDims = brickDims || {l:230, w:115, t:75};
+  sandParts = sandParts || 6;
+  const L = lenFt*0.3048, H = htFt*0.3048;
+  const gross = L*H*thicknessM*walls;
+  const deductArea = openings.reduce((s,o)=>s+(o.w*o.h),0);
+  const deductVol = deductArea*thicknessM;
+  const net = gross - deductVol;
+  // unit volume of one brick including a 10mm mortar joint on each dimension
+  const unitVolM3 = ((brickDims.l+10)/1000) * ((brickDims.w+10)/1000) * ((brickDims.t+10)/1000);
+  const bricksRaw = net/unitVolM3;
+  const netBricks = Math.round(bricksRaw*(1+wastagePct/100));
+  const mortarVol = +(net*0.30).toFixed(2);
+  const dryMortar = mortarVol*1.33;
+  const sumParts = 1+sandParts;
+  const cementVol = dryMortar/sumParts;
+  const cementBags = +((cementVol*1440)/50).toFixed(1);
+  const standardThickness = [0.115,0.23].includes(thicknessM);
+  const standardBrick = brickDims.l===230 && brickDims.w===115 && brickDims.t===75;
+
+  return {
+    title:'Brick Work Result', subtitle:`${walls} wall${walls>1?'s':''}, ${lenFt}ft × ${htFt}ft`,
+    heroLabel:'Net Bricks Required', heroValue: netBricks.toLocaleString('en-IN'),
+    heroSub:`Brick Size (${brickDims.l}×${brickDims.w}×${brickDims.t}mm), mix 1:${sandParts}`,
+    stats:[
+      {v:mortarVol+' m³', l:'Mortar Vol.'},
+      {v:cementBags+' Bags', l:'Cement Bags'},
+      {v:'+'+wastagePct+'%', l:'Wastage'}
+    ],
+    audit: (standardThickness && standardBrick) ? null : {title:'Audit Check!', text:`${!standardThickness?`Wall thickness of ${thicknessM}m is non-standard. `:''}${!standardBrick?`Brick size ${brickDims.l}×${brickDims.w}×${brickDims.t}mm is custom, not the IS-1077 standard. `:''}Verify before ordering.`},
+    steps:[
+      `Gross volume = L × H × t × No. walls`,
+      `= ${lenFt}ft × ${htFt}ft × ${thicknessM}m × ${walls} = <b>${gross.toFixed(2)} m³</b>`,
+      ``,
+      `Deductions (IS-1200 Cl.4.2)`,
+      `${openings.map(o=>o.type+' '+(o.w*o.h).toFixed(2)+'m²').join(' + ')} = <b>${deductArea.toFixed(2)} m²</b>`,
+      ``,
+      `Net volume = Gross − (Deductions × t)`,
+      `= ${gross.toFixed(2)} − ${deductVol.toFixed(2)} = <b>${net.toFixed(2)} m³</b>`,
+      ``,
+      `Unit volume = (${brickDims.l}+10) × (${brickDims.w}+10) × (${brickDims.t}+10) mm = <b>${(unitVolM3*1e6).toFixed(0)} cm³</b>`,
+      `Bricks = Net vol ÷ unit volume, + ${wastagePct}% wastage`,
+      `= ${Math.round(bricksRaw).toLocaleString('en-IN')} × ${(1+wastagePct/100).toFixed(2)} = <b>${netBricks.toLocaleString('en-IN')} bricks ✓</b>`,
+      ``,
+      `Mortar (1:${sandParts}) = ${mortarVol} m³ → dry ${dryMortar.toFixed(2)} m³ ÷ ${sumParts} parts = <b>${cementBags} bags cement</b>`
+    ],
+    shareText: `SiteCalc — Brick Work Result\nNet Bricks Required: ${netBricks.toLocaleString('en-IN')}\nBrick Size: ${brickDims.l}×${brickDims.w}×${brickDims.t}mm\nMortar Volume: ${mortarVol} m³ (1:${sandParts})\nCement: ${cementBags} bags\nWastage: +${wastagePct}%`
+  };
+}
+
+function computeConcrete(workType, lenFt, widFt, depFt, grade, wastagePct){
+  const ratios = { M15:[1,2,4], M20:[1,1.5,3], M25:[1,1,2], M30:[1,1,2] };
+  const r = ratios[grade];
+  const sum = r[0]+r[1]+r[2];
+  const volCft = lenFt*widFt*depFt;
+  const volCum = volCft*0.0283168;
+  const net = volCum*(1+wastagePct/100);
+  const dry = net*1.54;
+  const cementVol = dry*(r[0]/sum);
+  const cementBags = +((cementVol*1440)/50).toFixed(1);
+  const sandCum = dry*(r[1]/sum);
+  const sandCft = +(sandCum/0.0283168).toFixed(0);
+  const aggCum = dry*(r[2]/sum);
+  const aggCft = +(aggCum/0.0283168).toFixed(0);
+
+  return {
+    title:'Concrete Result', subtitle:`${workType}, Grade ${grade}`,
+    heroLabel:'Net Concrete Volume', heroValue: net.toFixed(2)+' m³',
+    heroSub:`Grade ${grade} (${r.join(':')}), incl. ${wastagePct}% wastage`,
+    stats:[
+      {v:cementBags, l:'Cement Bags'},
+      {v:sandCft+' cft', l:'Sand'},
+      {v:aggCft+' cft', l:'Aggregate'}
+    ],
+    audit: grade==='M30' ? {title:'Audit Check!', text:'M30 is a design mix grade. Ratios shown are indicative — confirm with a lab mix design before ordering.'} : null,
+    steps:[
+      `Volume = L × W × D`,
+      `= ${lenFt} × ${widFt} × ${depFt} ft = <b>${volCft.toFixed(2)} cft → ${volCum.toFixed(2)} m³</b>`,
+      ``,
+      `With ${wastagePct}% wastage = ${volCum.toFixed(2)} × ${(1+wastagePct/100).toFixed(2)} = <b>${net.toFixed(2)} m³</b>`,
+      ``,
+      `Mix ratio ${r.join(':')} (dry volume factor 1.54)`,
+      `Cement = ${net.toFixed(2)} × 1.54 ÷ ${sum} = <b>${cementVol.toFixed(3)} m³ → ${cementBags} bags</b>`
+    ],
+    shareText:`SiteCalc — Concrete Result\n${workType}, Grade ${grade}\nNet Volume: ${net.toFixed(2)} m³\nCement: ${cementBags} bags\nSand: ${sandCft} cft\nAggregate: ${aggCft} cft`
+  };
+}
+
+function computeExcavation(lenFt, widFt, depFt, bulkagePct, truckCft){
+  const bankCft = lenFt*widFt*depFt;
+  const bankCum = bankCft*0.0283168;
+  const bulked = bankCum*(1+bulkagePct/100);
+  const truckCum = truckCft*0.0283168;
+  const trips = Math.ceil(bulked/truckCum);
+  const soilLabel = {15:'Ordinary Soil',20:'Hard Soil / Murrum',25:'Soft / Loose Soil',30:'Rock (blasting)'}[bulkagePct] || 'Soil';
+
+  return {
+    title:'Excavation Result', subtitle:soilLabel,
+    heroLabel:'Net Excavation Volume', heroValue: bulked.toFixed(1)+' m³',
+    heroSub:`${soilLabel}, bulkage applied`,
+    stats:[
+      {v:'+'+bulkagePct+'%', l:'Bulkage'},
+      {v:trips, l:'Truck Trips'},
+      {v:truckCft+' cft', l:'Per Trip'}
+    ],
+    audit: {title:'Audit Check!', text:`${bulkagePct}% bulkage factor applied as standard for ${soilLabel.toLowerCase()} per site practice.`},
+    steps:[
+      `Volume = L × W × D`,
+      `= ${lenFt} × ${widFt} × ${depFt} = <b>${bankCft.toFixed(1)} cft → ${bankCum.toFixed(2)} m³</b> (bank measure)`,
+      ``,
+      `Bulked volume = ${bankCum.toFixed(2)} × ${(1+bulkagePct/100).toFixed(2)} = <b>${bulked.toFixed(2)} m³</b>`,
+      ``,
+      `Trips = ${bulked.toFixed(2)} m³ ÷ (${truckCft} cft = ${truckCum.toFixed(2)} m³)`,
+      `= <b>${trips} trips ✓</b>`
+    ],
+    shareText:`SiteCalc — Excavation Result\n${soilLabel}\nNet Volume: ${bulked.toFixed(1)} m³\nTruck Trips: ${trips} (@ ${truckCft} cft each)`
+  };
+}
+
+function unitWeight(dia){ return +((dia*dia)/162).toFixed(3); }
+function computeBbs(marks){
+  let total = 0;
+  const rows = marks.map(m=>{
+    const uw = unitWeight(m.dia);
+    const wt = +(m.nos*m.len*uw).toFixed(2);
+    total += wt;
+    return {...m, uw, wt};
+  });
+  total = +total.toFixed(1);
+  const byDia = {};
+  rows.forEach(r=>{ byDia[r.dia] = (byDia[r.dia]||0)+r.wt; });
+  const stats = Object.keys(byDia).map(d=>({v:byDia[d].toFixed(1)+' kg', l:d+'mm Bars'})).slice(0,3);
+
+  return {
+    title:'Steel BBS Result', subtitle: marks.length+' bar mark'+(marks.length>1?'s':''),
+    heroLabel:'Grand Total Weight', heroValue: total.toFixed(1)+' kg',
+    heroSub:'IS-2502 unit weight table (d²/162)',
+    stats: stats.length ? stats : [{v:total+' kg', l:'Total'}],
+    audit:null,
+    table: rows,
+    steps: rows.map(r=>`${r.mark}: unit wt = ${r.dia}²/162 = <b>${r.uw} kg/m</b> — ${r.nos} × ${r.len}m × ${r.uw} = <b>${r.wt} kg</b>`),
+    shareText:`SiteCalc — Steel BBS Result\nGrand Total Weight: ${total.toFixed(1)} kg\n`+rows.map(r=>`${r.mark}: ${r.wt} kg`).join('\n')
+  };
+}
+
+const TILE_PER_BOX = {600:4, 300:10, 800:2};
+function computeTile(surface, lenFt, widFt, sizeMm, wastagePct){
+  const areaSqft = lenFt*widFt;
+  const areaSqm = areaSqft*0.092903;
+  const tileAreaSqm = (sizeMm/1000)*(sizeMm/1000);
+  const rawTiles = areaSqm/tileAreaSqm;
+  const netTiles = Math.ceil(rawTiles*(1+wastagePct/100));
+  const perBox = TILE_PER_BOX[sizeMm] || 4;
+  const boxes = Math.ceil(netTiles/perBox);
+
+  return {
+    title:'Tile Result', subtitle:`${surface}, ${sizeMm}×${sizeMm}mm`,
+    heroLabel:'Net Tiles Required', heroValue: netTiles.toLocaleString('en-IN'),
+    heroSub:`${sizeMm} × ${sizeMm} mm, incl. ${wastagePct}% wastage`,
+    stats:[
+      {v:areaSqm.toFixed(1)+' m²', l:'Area'},
+      {v:perBox, l:'Tiles / Box'},
+      {v:boxes, l:'Boxes'}
+    ],
+    audit:null,
+    steps:[
+      `Area = L × W = ${lenFt} × ${widFt} = <b>${areaSqft.toFixed(1)} sqft → ${areaSqm.toFixed(2)} m²</b>`,
+      ``,
+      `Tile area = (${sizeMm/1000})² = <b>${tileAreaSqm.toFixed(3)} m²</b>`,
+      `Tiles = ${areaSqm.toFixed(2)} ÷ ${tileAreaSqm.toFixed(3)} = <b>${rawTiles.toFixed(1)}</b>`,
+      ``,
+      `With ${wastagePct}% wastage = ${rawTiles.toFixed(1)} × ${(1+wastagePct/100).toFixed(2)} = <b>${netTiles} tiles ✓</b>`
+    ],
+    shareText:`SiteCalc — Tile Result\n${surface}, ${sizeMm}x${sizeMm}mm\nNet Tiles: ${netTiles}\nArea: ${areaSqm.toFixed(1)} m²\nBoxes: ${boxes}`
+  };
+}
+
+function computeRcc(lenFt, widFt, thicknessMm, grade){
+  const ratios = { M20:[1,1.5,3], M25:[1,1,2] };
+  const r = ratios[grade];
+  const sum = r[0]+r[1]+r[2];
+  const thicknessFt = thicknessMm/304.8;
+  const volCft = lenFt*widFt*thicknessFt;
+  const volCum = volCft*0.0283168;
+  const dry = volCum*1.54;
+  const cementVol = dry*(r[0]/sum);
+  const cementBags = +((cementVol*1440)/50).toFixed(1);
+  const steelKg = Math.round(volCum*80);
+
+  return {
+    title:'RCC Slab Result', subtitle:`${thicknessMm}mm thick, Grade ${grade}`,
+    heroLabel:'Net Concrete Volume', heroValue: volCum.toFixed(2)+' m³',
+    heroSub:`${thicknessMm}mm thick, Grade ${grade}`,
+    stats:[
+      {v:cementBags+' Bags', l:'Cement'},
+      {v:'~'+steelKg+' kg', l:'Est. Steel'},
+      {v:(dry*(r[2]/sum)/0.0283168).toFixed(0)+' cft', l:'Aggregate'}
+    ],
+    audit:{title:'Audit Check!', text:'Steel quantity is a rule-of-thumb estimate (80 kg/m³). Confirm against the structural drawing before ordering.'},
+    steps:[
+      `Volume = L × W × t`,
+      `= ${lenFt} × ${widFt} × ${thicknessMm}mm = <b>${volCum.toFixed(2)} m³</b>`,
+      ``,
+      `Mix ratio ${r.join(':')}, dry volume factor 1.54`,
+      `Cement = ${volCum.toFixed(2)} × 1.54 ÷ ${sum} = <b>${cementBags} bags</b>`
+    ],
+    shareText:`SiteCalc — RCC Slab Result\n${thicknessMm}mm, Grade ${grade}\nVolume: ${volCum.toFixed(2)} m³\nCement: ${cementBags} bags\nEst. Steel: ~${steelKg} kg`
+  };
+}
+
+function computePlaster(surface, lenFt, hFt, ratioSand, thicknessMm, wastagePct){
+  const sum = 1+ratioSand;
+  const areaSqft = lenFt*hFt;
+  const areaSqm = areaSqft*0.092903;
+  const thicknessM = thicknessMm/1000;
+  const wetVol = areaSqm*thicknessM;
+  const netVol = wetVol*(1+wastagePct/100);
+  const dryVol = netVol*1.33;
+  const cementVol = dryVol*(1/sum);
+  const cementBags = +((cementVol*1440)/50).toFixed(1);
+  const sandVol = dryVol*(ratioSand/sum);
+  const sandCft = +(sandVol/0.0283168).toFixed(1);
+
+  return {
+    title:'Plaster Result', subtitle:`${surface}, ${thicknessMm}mm, 1:${ratioSand}`,
+    heroLabel:'Net Plaster Area', heroValue: areaSqm.toFixed(1)+' m²',
+    heroSub:`${thicknessMm}mm thick, mix 1:${ratioSand}, incl. ${wastagePct}% wastage`,
+    stats:[
+      {v:cementBags+' Bags', l:'Cement'},
+      {v:sandCft+' cft', l:'Sand'},
+      {v:thicknessMm+'mm', l:'Thickness'}
+    ],
+    audit: thicknessMm>=20 ? {title:'Audit Check!', text:'20mm plaster is usually applied in two coats — a scratch coat plus a finish coat. Plan the schedule accordingly.'} : null,
+    steps:[
+      `Area = L × H = ${lenFt} × ${hFt} = <b>${areaSqft.toFixed(1)} sqft → ${areaSqm.toFixed(2)} m²</b>`,
+      ``,
+      `Wet volume = Area × thickness = ${areaSqm.toFixed(2)} × ${thicknessM} = <b>${wetVol.toFixed(3)} m³</b>`,
+      `With ${wastagePct}% wastage = <b>${netVol.toFixed(3)} m³</b>`,
+      ``,
+      `Dry volume (×1.33) = <b>${dryVol.toFixed(3)} m³</b>`,
+      `Cement = ${dryVol.toFixed(3)} ÷ ${sum} = <b>${cementBags} bags</b>`
+    ],
+    shareText:`SiteCalc — Plaster Result\n${surface}, ${thicknessMm}mm, 1:${ratioSand}\nArea: ${areaSqm.toFixed(1)} m²\nCement: ${cementBags} bags\nSand: ${sandCft} cft`
+  };
+}
+
+function computeShuttering(element, lenFt, hFt, faces, wastagePct){
+  const areaSqft = lenFt*hFt*faces;
+  const areaSqm = areaSqft*0.092903;
+  const netSqft = areaSqft*(1+wastagePct/100);
+  const sheets = Math.ceil(netSqft/32); // standard 8ft x 4ft plywood sheet = 32 sqft
+
+  return {
+    title:'Shuttering Result', subtitle:`${element}, ${faces} faces`,
+    heroLabel:'Net Shuttering Area', heroValue: areaSqm.toFixed(1)+' m²',
+    heroSub:`${element}, incl. ${wastagePct}% wastage`,
+    stats:[
+      {v:netSqft.toFixed(0)+' sqft', l:'Contact Area'},
+      {v:sheets, l:'Ply Sheets (8×4ft)'},
+      {v:faces, l:'Faces'}
+    ],
+    audit:null,
+    steps:[
+      `Contact area = L × H × faces`,
+      `= ${lenFt} × ${hFt} × ${faces} = <b>${areaSqft.toFixed(1)} sqft → ${areaSqm.toFixed(2)} m²</b>`,
+      ``,
+      `With ${wastagePct}% wastage = <b>${netSqft.toFixed(1)} sqft</b>`,
+      `Sheets (8×4ft = 32 sqft each) = ${netSqft.toFixed(1)} ÷ 32 = <b>${sheets} sheets ✓</b>`
+    ],
+    shareText:`SiteCalc — Shuttering Result\n${element}, ${faces} faces\nArea: ${areaSqm.toFixed(1)} m²\nPly Sheets: ${sheets}`
+  };
+}
+
+const WP_RATES = {
+  cementitious:{label:'Cementitious Coating', ratePerSqmPerCoat:1.5, coats:2, unit:'kg'},
+  liquid:{label:'Liquid Membrane', ratePerSqmPerCoat:1.0, coats:2, unit:'kg'},
+  app:{label:'APP Membrane (torch-on)', ratePerSqmPerCoat:0, coats:1, unit:'rolls', sqmPerRoll:10},
+  bbc:{label:'Brick Bat Coba', ratePerSqmPerCoat:0, coats:1, unit:'m³', thicknessM:0.075}
+};
+function computeWaterproof(lenFt, widFt, treatment){
+  const areaSqft = lenFt*widFt;
+  const areaSqm = areaSqft*0.092903;
+  const t = WP_RATES[treatment];
+  let stats, steps, heroLabel, heroValue;
+  if(treatment==='app'){
+    const rolls = Math.ceil(areaSqm/t.sqmPerRoll);
+    heroLabel='Rolls Required'; heroValue=rolls+' rolls';
+    stats=[{v:areaSqm.toFixed(1)+' m²', l:'Area'},{v:t.sqmPerRoll+' m²', l:'Per Roll'},{v:rolls, l:'Rolls'}];
+    steps=[`Area = ${lenFt} × ${widFt} = <b>${areaSqm.toFixed(1)} m²</b>`, ``, `Rolls = Area ÷ ${t.sqmPerRoll} m² per roll = <b>${rolls} rolls ✓</b>`];
+  } else if(treatment==='bbc'){
+    const volCum = areaSqm*t.thicknessM;
+    heroLabel='Brick Bat Coba Volume'; heroValue=volCum.toFixed(2)+' m³';
+    stats=[{v:areaSqm.toFixed(1)+' m²', l:'Area'},{v:(t.thicknessM*1000)+'mm', l:'Avg Thickness'},{v:volCum.toFixed(2)+' m³', l:'Volume'}];
+    steps=[`Area = ${lenFt} × ${widFt} = <b>${areaSqm.toFixed(1)} m²</b>`, ``, `Volume = Area × avg thickness (${t.thicknessM*1000}mm) = <b>${volCum.toFixed(2)} m³</b>`];
+  } else {
+    const totalKg = Math.ceil(areaSqm*t.ratePerSqmPerCoat*t.coats);
+    heroLabel='Material Required'; heroValue=totalKg+' kg';
+    stats=[{v:areaSqm.toFixed(1)+' m²', l:'Area'},{v:t.coats, l:'Coats'},{v:t.ratePerSqmPerCoat+' kg/m²', l:'Per Coat'}];
+    steps=[`Area = ${lenFt} × ${widFt} = <b>${areaSqm.toFixed(1)} m²</b>`, ``, `Material = Area × ${t.ratePerSqmPerCoat} kg/m² × ${t.coats} coats = <b>${totalKg} kg ✓</b>`];
+  }
+  return {
+    title:'Waterproofing Result', subtitle:t.label,
+    heroLabel, heroValue, heroSub:`${t.label}, ${areaSqm.toFixed(1)} m² area`,
+    stats, audit:{title:'Audit Check!', text:'Coverage rates are manufacturer averages — check the product data sheet for your specific brand before ordering.'},
+    steps,
+    shareText:`SiteCalc — Waterproofing Result\n${t.label}\nArea: ${areaSqm.toFixed(1)} m²\n${heroLabel}: ${heroValue}`
+  };
+}
+
+/* ============================================================
+   ROUTER
+   ============================================================ */
+const app = {
+
+  goto(id, resetStack){
+    const screenId = 'screen-'+id;
+    if(resetStack){ state.navStack = [screenId]; }
+    else { state.navStack.push(screenId); }
+    this.render(screenId);
+    if(screenId==='screen-calc-brickwork'){ this.renderWallDiagram(); }
+    if(screenId==='screen-projects'){ this.renderProjects(); }
+  },
+
+  back(){
+    if(state.navStack.length>1){
+      state.navStack.pop();
+      this.render(state.navStack[state.navStack.length-1]);
+    } else {
+      this.render('screen-home');
+    }
+  },
+
+  render(screenId){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const el = document.getElementById(screenId);
+    if(el) el.classList.add('active');
+    const nav = el ? el.dataset.nav : null;
+    document.getElementById('bottom-nav').style.display = ['screen-splash','screen-login','screen-otp'].includes(screenId) ? 'none' : 'flex';
+    document.querySelectorAll('.nav-item').forEach(n=> n.classList.toggle('active', n.dataset.nav===nav));
+    window.scrollTo(0,0);
+  },
+
+  /* ---------- auth ---------- */
+  sendOtp(){
+    const phone = document.getElementById('login-phone').value.trim();
+    if(phone.length<10){ this.toast('Enter a valid 10-digit number', false); return; }
+    document.getElementById('otp-sub').textContent = `Enter the 4-digit code sent to +91 ${phone}`;
+    this.goto('otp');
+    setTimeout(()=>document.querySelector('.otp-box').focus(), 100);
+  },
+  verifyOtp(){
+    seedHistory();
+    this.renderHome();
+    this.renderCalcGrid();
+    this.goto('home', true);
+  },
+  logout(){ this.goto('login', true); },
+  toggleDark(){
+    state.darkMode = !state.darkMode;
+    document.body.classList.toggle('dark', state.darkMode);
+    document.getElementById('dark-toggle').classList.toggle('on', state.darkMode);
+  },
+  updateSetting(key, val){
+    state.settings[key] = val;
+    this.toast('Saved', true);
+  },
+  otpNext(i){
+    const el = document.getElementById('otp-'+i);
+    el.value = el.value.replace(/[^0-9]/g,'').slice(0,1);
+    if(el.value && i<3){ document.getElementById('otp-'+(i+1)).focus(); }
+    if(el.value && i===3){
+      const filled = [0,1,2,3].every(n=>document.getElementById('otp-'+n).value);
+      if(filled) setTimeout(()=>this.verifyOtp(), 200);
+    }
+  },
+  otpBack(e,i){
+    if(e.key==='Backspace' && !e.target.value && i>0){
+      document.getElementById('otp-'+(i-1)).focus();
+    }
+  },
+
+  /* ---------- home ---------- */
+  renderHome(){
+    const row = document.getElementById('recent-row');
+    const seen = new Set();
+    let recents = [];
+    for(const h of state.history){
+      if(!seen.has(h.type)){ seen.add(h.type); recents.push({icon:h.icon, label:h.title, go:TYPE_TO_CALC[h.type]||'home'}); }
+      if(recents.length===3) break;
+    }
+    if(recents.length===0){
+      recents = [
+        {icon:'brick', label:'Brickwork', go:'calc-brickwork'},
+        {icon:'slab', label:'RCC Slab', go:'calc-rcc'},
+        {icon:'steel', label:'Steel', go:'calc-bbs'}
+      ];
+    }
+    row.innerHTML = recents.map(r=>`<button class="recent-card" onclick="app.goto('${r.go}')"><span class="icon" data-icon="${r.icon}"></span><div class="label">${r.label}</div></button>`).join('');
+    mountIcons(row);
+  },
+
+  /* ---------- calc grid + filter + search ---------- */
+  renderCalcGrid(){
+    const grid = document.getElementById('calc-grid');
+    const cat = state.activeCategory;
+    const list = cat==='all' ? CALCULATORS : CALCULATORS.filter(c=>c.cat===cat);
+    grid.innerHTML = list.map(c=>`<button class="calc-tile" onclick="app.goto('${c.go}')">
+        <span class="icon" data-icon="${c.icon}"></span>
+        <div><div class="t">${c.label}</div><div class="s">${c.sub}</div></div>
+      </button>`).join('');
+    mountIcons(grid);
+  },
+  filterCalculators(cat, chipEl){
+    state.activeCategory = cat;
+    document.querySelectorAll('#calc-filter-row .chip').forEach(c=>c.classList.remove('active'));
+    chipEl.classList.add('active');
+    this.renderCalcGrid();
+  },
+  runSearch(q){
+    const box = document.getElementById('search-results');
+    q = q.trim().toLowerCase();
+    if(!q){ box.classList.remove('show'); box.innerHTML=''; return; }
+    const projectMatches = state.projects.filter(p=>p.name.toLowerCase().includes(q) || p.location.toLowerCase().includes(q));
+    const calcMatches = CALCULATORS.filter(c=>c.label.toLowerCase().includes(q));
+    let html = '';
+    if(projectMatches.length){
+      html += projectMatches.map(p=>`<div class="search-result-row" onclick="app.selectSearchResult('project','${p.id}')"><span class="icon" data-icon="folder"></span><div><div class="srt">${p.name}</div><div class="srs">${p.location}</div></div></div>`).join('');
+    }
+    if(calcMatches.length){
+      html += calcMatches.map(c=>`<div class="search-result-row" onclick="app.selectSearchResult('calc','${c.id}')"><span class="icon" data-icon="${c.icon}"></span><div><div class="srt">${c.label}</div><div class="srs">${c.sub}</div></div></div>`).join('');
+    }
+    if(!html){ html = `<div class="search-empty">No matches for "${q}"</div>`; }
+    box.innerHTML = html;
+    box.classList.add('show');
+  },
+  selectSearchResult(kind, id){
+    document.getElementById('search-results').classList.remove('show');
+    document.getElementById('home-search').value = '';
+    if(kind==='project'){ this.openProject(id); }
+    else {
+      const c = CALCULATORS.find(x=>x.id===id);
+      this.goto(c.go);
+    }
+  },
+
+  /* ---------- brickwork ---------- */
+  OPENING_DEFAULTS: {Door:[0.9,2.1], Window:[1.2,1.2], Ventilator:[0.6,0.45], Other:[1,1]},
+  openingIcon(type){ return type==='Door' ? 'door' : (type==='Window'||type==='Ventilator') ? 'window' : 'opening'; },
+  addOpening(){
+    state.openings.push({type:'Door', w:0.9, h:2.1});
+    this.renderOpenings();
+  },
+  removeOpening(i){
+    state.openings.splice(i,1);
+    this.renderOpenings();
+  },
+  updateOpeningType(i, type){
+    const d = this.OPENING_DEFAULTS[type] || [1,1];
+    state.openings[i].type = type;
+    state.openings[i].w = d[0];
+    state.openings[i].h = d[1];
+    this.renderOpenings();
+  },
+  updateOpeningDim(i, key, val){
+    state.openings[i][key] = +val || 0;
+    this.renderWallDiagram();
+  },
+  renderOpenings(){
+    const wrap = document.getElementById('bw-openings');
+    wrap.innerHTML = state.openings.map((o,i)=>`
+      <div class="opening-row-edit">
+        <div class="opening-row-top">
+          <span class="icon" data-icon="${this.openingIcon(o.type)}"></span>
+          <select onchange="app.updateOpeningType(${i}, this.value)" aria-label="Opening type">
+            <option value="Door" ${o.type==='Door'?'selected':''}>Door</option>
+            <option value="Window" ${o.type==='Window'?'selected':''}>Window</option>
+            <option value="Ventilator" ${o.type==='Ventilator'?'selected':''}>Ventilator</option>
+            <option value="Other" ${o.type==='Other'?'selected':''}>Other</option>
+          </select>
+          <button class="card-delete" onclick="app.removeOpening(${i})" aria-label="Remove opening"><span class="icon" data-icon="trash"></span></button>
+        </div>
+        <div class="opening-row-dims">
+          <div class="odim"><label>Width (m)</label><input type="number" step="0.1" value="${o.w}" onchange="app.updateOpeningDim(${i},'w',this.value)"></div>
+          <div class="odim"><label>Height (m)</label><input type="number" step="0.1" value="${o.h}" onchange="app.updateOpeningDim(${i},'h',this.value)"></div>
+        </div>
+      </div>`).join('');
+    mountIcons(wrap);
+    this.renderWallDiagram();
+  },
+  renderWallDiagram(){
+    const wrap = document.getElementById('wall-diagram');
+    if(!wrap) return;
+    const lenInput = document.getElementById('bw-length');
+    const htInput = document.getElementById('bw-height');
+    const thicknessInput = document.getElementById('bw-thickness');
+    if(!lenInput || !htInput || !thicknessInput) return;
+    const lenFt = +lenInput.value || 0;
+    const htFt = +htInput.value || 0;
+    const thickness = +thicknessInput.value || 0.23;
+    if(lenFt<=0 || htFt<=0){
+      wrap.innerHTML = `<div class="diagram-placeholder">Enter wall length and height to see the blueprint</div>`;
+      return;
+    }
+    const Lm = lenFt*0.3048, Hm = htFt*0.3048;
+    const maxW = 250, maxH = 130;
+    let dispW, dispH;
+    if(Lm/Hm > maxW/maxH){ dispW = maxW; dispH = maxW*Hm/Lm; } else { dispH = maxH; dispW = maxH*Lm/Hm; }
+    const originX = (300-dispW)/2, originY = 140-dispH;
+    const pxPerM = dispW/Lm;
+
+    let courses = '';
+    const numCourses = Math.max(3, Math.round(dispH/13));
+    for(let i=1;i<numCourses;i++){
+      const y = originY + (dispH/numCourses)*i;
+      courses += `<line x1="${originX}" y1="${y.toFixed(1)}" x2="${(originX+dispW).toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>`;
+    }
+
+    let openingsSvg = '';
+    let cursorM = Math.min(0.3, Lm*0.08);
+    (state.openings||[]).forEach(o=>{
+      const wPx = Math.min(o.w*pxPerM, dispW - (cursorM*pxPerM));
+      const hPx = Math.min(o.h*pxPerM, dispH);
+      const xPx = originX + cursorM*pxPerM;
+      let yPx;
+      if(o.type==='Door'){ yPx = originY + dispH - hPx; }
+      else { const sillM = 0.9; yPx = Math.max(originY, originY + dispH - (sillM*pxPerM) - hPx); }
+      if(xPx + wPx <= originX + dispW){
+        openingsSvg += `<rect x="${xPx.toFixed(1)}" y="${yPx.toFixed(1)}" width="${wPx.toFixed(1)}" height="${hPx.toFixed(1)}" fill="rgba(0,0,0,0.35)" stroke="#fff" stroke-width="1.2"/>
+          <text x="${(xPx+wPx/2).toFixed(1)}" y="${(yPx+hPx/2).toFixed(1)}" font-size="6.5" fill="#fff" text-anchor="middle" dominant-baseline="middle">${o.w}×${o.h}</text>`;
+      }
+      cursorM += o.w + 0.3;
+    });
+
+    wrap.innerHTML = `<svg viewBox="0 0 300 165" style="width:100%; height:auto; display:block;">
+      <rect x="${originX.toFixed(1)}" y="${originY.toFixed(1)}" width="${dispW.toFixed(1)}" height="${dispH.toFixed(1)}" fill="rgba(255,255,255,0.08)" stroke="#fff" stroke-width="1.5"/>
+      ${courses}
+      ${openingsSvg}
+      <line x1="${originX.toFixed(1)}" y1="${(originY+dispH+12).toFixed(1)}" x2="${(originX+dispW).toFixed(1)}" y2="${(originY+dispH+12).toFixed(1)}" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
+      <text x="${(originX+dispW/2).toFixed(1)}" y="${(originY+dispH+24).toFixed(1)}" font-size="9" fill="#fff" text-anchor="middle">L = ${lenFt} ft</text>
+      <line x1="${(originX-10).toFixed(1)}" y1="${originY.toFixed(1)}" x2="${(originX-10).toFixed(1)}" y2="${(originY+dispH).toFixed(1)}" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
+      <text x="14" y="${(originY+dispH/2).toFixed(1)}" font-size="9" fill="#fff" text-anchor="middle" transform="rotate(-90 14 ${(originY+dispH/2).toFixed(1)})">H = ${htFt} ft</text>
+      <text x="${(originX+dispW-2).toFixed(1)}" y="${(originY-6).toFixed(1)}" font-size="9" fill="#fff" text-anchor="end">T = ${thickness} m</text>
+    </svg>`;
+  },
+  calcBrickwork(){
+    const walls = +document.getElementById('bw-walls').value || 1;
+    const length = +document.getElementById('bw-length').value || 0;
+    const height = +document.getElementById('bw-height').value || 0;
+    const thickness = +document.getElementById('bw-thickness').value;
+    const brickDims = {
+      l: +document.getElementById('bw-brick-l').value || 230,
+      w: +document.getElementById('bw-brick-w').value || 115,
+      t: +document.getElementById('bw-brick-t').value || 75
+    };
+    const sandParts = +document.getElementById('bw-mortar-sand').value || 6;
+    const wastage = +document.getElementById('bw-wastage').value || 10;
+    if(length<=0 || height<=0){ this.toast('Enter wall length and height to calculate', false); return; }
+    const res = computeBrickwork(walls, length, height, thickness, state.openings, wastage, brickDims, sandParts);
+    this.saveToHistory({type:'brickwork', title:'Brick Work', subtitle:`${walls} wall(s), ${length}ft × ${height}ft`, icon:'brick',
+      inputs:{walls,length,height,thickness,openings:JSON.parse(JSON.stringify(state.openings)),brickDims,sandParts,wastage}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- concrete ---------- */
+  calcConcrete(){
+    const workType = document.querySelector('#cc-worktype .chip.active').dataset.val;
+    const l=+document.getElementById('cc-length').value, w=+document.getElementById('cc-width').value, d=+document.getElementById('cc-depth').value;
+    const grade = document.getElementById('cc-grade').value;
+    const wastage = +document.getElementById('cc-wastage').value || 0;
+    if(l<=0||w<=0||d<=0){ this.toast('Enter all dimensions to calculate', false); return; }
+    const res = computeConcrete(workType,l,w,d,grade,wastage);
+    this.saveToHistory({type:'concrete', title:'Concrete', subtitle:`${workType}, Grade ${grade}`, icon:'concrete',
+      inputs:{workType,l,w,d,grade,wastage}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- excavation ---------- */
+  calcExcavation(){
+    const l=+document.getElementById('ex-length').value, w=+document.getElementById('ex-width').value, d=+document.getElementById('ex-depth').value;
+    const soil=+document.getElementById('ex-soil').value, truck=+document.getElementById('ex-truck').value || 100;
+    if(l<=0||w<=0||d<=0){ this.toast('Enter all pit dimensions to calculate', false); return; }
+    const res = computeExcavation(l,w,d,soil,truck);
+    this.saveToHistory({type:'excavation', title:'Excavation', subtitle:`${l}ft × ${w}ft × ${d}ft pit`, icon:'excavation',
+      inputs:{length:l,width:w,depth:d,soil,truck}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- bbs ---------- */
+  addBarMark(){
+    state.barMarks.push({mark:'C'+(state.barMarks.length+1)+'-0'+(state.barMarks.length+1), dia:12, shape:'Straight', nos:1, len:1});
+    this.renderBarMarks();
+  },
+  removeBarMark(i){ state.barMarks.splice(i,1); this.renderBarMarks(); },
+  updateBarMark(i,key,val){ state.barMarks[i][key] = (key==='dia'||key==='nos'||key==='len') ? +val : val; },
+  renderBarMarks(){
+    const wrap = document.getElementById('bbs-marks');
+    wrap.innerHTML = state.barMarks.map((m,i)=>`
+      <div class="bar-card">
+        <div class="bc-head"><span>${m.mark}</span><button class="del" onclick="app.removeBarMark(${i})" aria-label="Remove bar mark"><span class="icon" data-icon="trash"></span></button></div>
+        <div class="bc-grid">
+          <div class="bc-field"><label>Dia (mm)</label><select onchange="app.updateBarMark(${i},'dia',this.value)">
+            ${[8,10,12,16,20,25,32].map(d=>`<option value="${d}" ${d===m.dia?'selected':''}>${d}mm</option>`).join('')}
+          </select></div>
+          <div class="bc-field"><label>Shape</label><select onchange="app.updateBarMark(${i},'shape',this.value)">
+            ${['Straight','L-Bend','U-Bend','Stirrup'].map(s=>`<option ${s===m.shape?'selected':''}>${s}</option>`).join('')}
+          </select></div>
+          <div class="bc-field"><label>Nos</label><input type="number" value="${m.nos}" onchange="app.updateBarMark(${i},'nos',this.value)"></div>
+          <div class="bc-field"><label>Cut Len (m)</label><input type="number" step="0.1" value="${m.len}" onchange="app.updateBarMark(${i},'len',this.value)"></div>
+        </div>
+      </div>`).join('');
+    mountIcons(wrap);
+  },
+  calcBbs(){
+    if(!state.barMarks.length){ this.toast('Add at least one bar mark', false); return; }
+    const res = computeBbs(state.barMarks);
+    this.saveToHistory({type:'bbs', title:'Steel BBS', subtitle:`${state.barMarks.length} bar mark(s)`, icon:'steel',
+      inputs:{marks:JSON.parse(JSON.stringify(state.barMarks))}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- tile ---------- */
+  calcTile(){
+    const surface = document.querySelector('#tl-surface .chip.active').dataset.val;
+    const l=+document.getElementById('tl-length').value, w=+document.getElementById('tl-width').value;
+    const size=+document.getElementById('tl-size').value, wastage=+document.getElementById('tl-wastage').value||0;
+    if(l<=0||w<=0){ this.toast('Enter room dimensions to calculate', false); return; }
+    const res = computeTile(surface,l,w,size,wastage);
+    this.saveToHistory({type:'tile', title:'Tile', subtitle:`${surface}, ${size}×${size}mm`, icon:'tile',
+      inputs:{surface,length:l,width:w,size,wastage}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- rcc ---------- */
+  calcRcc(){
+    const l=+document.getElementById('rc-length').value, w=+document.getElementById('rc-width').value;
+    const thickness=+document.querySelector('#rc-thickness .chip.active').dataset.val;
+    const grade=document.getElementById('rc-grade').value;
+    if(l<=0||w<=0){ this.toast('Enter slab dimensions to calculate', false); return; }
+    const res = computeRcc(l,w,thickness,grade);
+    this.saveToHistory({type:'rcc', title:'RCC Slab', subtitle:`${thickness}mm, Grade ${grade}`, icon:'slab',
+      inputs:{length:l,width:w,thickness,grade}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- plaster ---------- */
+  calcPlaster(){
+    const surface = document.querySelector('#pl-surface .chip.active').dataset.val;
+    const l=+document.getElementById('pl-length').value, h=+document.getElementById('pl-height').value;
+    const ratio=+document.getElementById('pl-ratio').value;
+    const thickness=+document.querySelector('#pl-thickness .chip.active').dataset.val;
+    const wastage=+document.getElementById('pl-wastage').value||0;
+    if(l<=0||h<=0){ this.toast('Enter dimensions to calculate', false); return; }
+    const res = computePlaster(surface,l,h,ratio,thickness,wastage);
+    this.saveToHistory({type:'plaster', title:'Plaster', subtitle:`${surface}, ${thickness}mm`, icon:'plaster',
+      inputs:{surface,length:l,height:h,ratio,thickness,wastage}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- shuttering ---------- */
+  calcShuttering(){
+    const element = document.querySelector('#sh-element .chip.active').dataset.val;
+    const l=+document.getElementById('sh-length').value, h=+document.getElementById('sh-height').value;
+    const faces=+document.getElementById('sh-faces').value;
+    const wastage=+document.getElementById('sh-wastage').value||0;
+    if(l<=0||h<=0){ this.toast('Enter dimensions to calculate', false); return; }
+    const res = computeShuttering(element,l,h,faces,wastage);
+    this.saveToHistory({type:'shuttering', title:'Shuttering', subtitle:`${element}, ${faces} faces`, icon:'shutter',
+      inputs:{element,length:l,height:h,faces,wastage}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- waterproofing ---------- */
+  calcWaterproof(){
+    const l=+document.getElementById('wp-length').value, w=+document.getElementById('wp-width').value;
+    const treatment = document.getElementById('wp-treatment').value;
+    if(l<=0||w<=0){ this.toast('Enter area dimensions to calculate', false); return; }
+    const res = computeWaterproof(l,w,treatment);
+    this.saveToHistory({type:'waterproof', title:'Waterproofing', subtitle:WP_RATES[treatment].label, icon:'waterdrop',
+      inputs:{length:l,width:w,treatment}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- converter ---------- */
+  rebuildConverterUnits(){
+    const cat = document.getElementById('cv-cat').value;
+    const units = CONV[cat].units;
+    const opts = Object.keys(units).map(k=>`<option value="${k}">${units[k].label}</option>`).join('');
+    document.getElementById('cv-from').innerHTML = opts;
+    document.getElementById('cv-to').innerHTML = opts;
+    document.getElementById('cv-to').selectedIndex = 1;
+    this.runConverter();
+    this.renderQuickRef(cat);
+  },
+  runConverter(){
+    const cat = document.getElementById('cv-cat').value;
+    const units = CONV[cat].units;
+    const val = +document.getElementById('cv-value').value || 0;
+    const from = document.getElementById('cv-from').value;
+    const to = document.getElementById('cv-to').value;
+    const inBase = val*units[from].f;
+    const result = inBase/units[to].f;
+    document.getElementById('cv-result').value = (Math.round(result*10000)/10000).toString();
+  },
+  renderQuickRef(cat){
+    const refs = {
+      volume:[['1 cft','0.0283 cum'],['1 cum','35.3 cft'],['1 litre','0.001 cum']],
+      area:[['1 sqft','0.0929 sqm'],['1 cent','40.5 sqm'],['1 acre','4,047 sqm']],
+      length:[['1 ft','0.3048 m'],['1 inch','2.54 cm'],['1 m','3.28 ft']],
+      weight:[['1 bag','50 kg'],['1 tonne','1000 kg'],['1 quintal','100 kg']],
+      cement:[['1 bag','50 kg'],['1 bag','0.0347 cum loose'],['20 bags','~1 tonne']]
+    };
+    document.getElementById('cv-quickref').innerHTML = refs[cat].map(r=>`<div class="calc-tile" style="cursor:default;"><div><div class="t">${r[0]}</div><div class="s">= ${r[1]}</div></div></div>`).join('');
+  },
+
+  /* ---------- estimate ---------- */
+  addEstimateItem(){
+    state.estimateItems.push({label:'New Work Item', qty:'—', cost:0});
+    this.renderEstimateItems();
+  },
+  removeEstimateItem(i){ state.estimateItems.splice(i,1); this.renderEstimateItems(); },
+  updateEstimateItem(i,key,val){ state.estimateItems[i][key] = key==='cost' ? (+val||0) : val; },
+  renderEstimateItems(){
+    const wrap = document.getElementById('est-items');
+    wrap.innerHTML = state.estimateItems.map((it,i)=>`
+      <div class="opening-row">
+        <div class="oi"><span class="icon" data-icon="estimate" style="width:18px;height:18px;"></span>
+          <div>
+            <input value="${it.label}" onchange="app.updateEstimateItem(${i},'label',this.value)" style="border:none;background:none;font-weight:600;font-size:13.5px;width:150px;">
+            <div class="om">${it.qty}</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="number" value="${it.cost}" onchange="app.updateEstimateItem(${i},'cost',this.value)" style="width:80px; border:1px solid var(--border); border-radius:8px; padding:6px; font-weight:700; text-align:right;">
+          <button class="del" onclick="app.removeEstimateItem(${i})" aria-label="Remove item"><span class="icon" data-icon="trash"></span></button>
+        </div>
+      </div>`).join('');
+    mountIcons(wrap);
+  },
+  calcEstimate(){
+    const subtotal = state.estimateItems.reduce((s,i)=>s+i.cost,0);
+    const contingencyPct = +document.getElementById('est-contingency').value || 0;
+    const contingency = Math.round(subtotal*contingencyPct/100);
+    const grand = subtotal+contingency;
+    const res = {
+      title:'Estimate Result', subtitle:`${state.estimateItems.length} work items`,
+      heroLabel:'Grand Total', heroValue:'₹'+grand.toLocaleString('en-IN'),
+      heroSub:`Subtotal ₹${subtotal.toLocaleString('en-IN')} + ${contingencyPct}% contingency`,
+      stats:[
+        {v:'₹'+subtotal.toLocaleString('en-IN'), l:'Subtotal'},
+        {v:'₹'+contingency.toLocaleString('en-IN'), l:'Contingency'},
+        {v:contingencyPct+'%', l:'Buffer'}
+      ],
+      audit:null,
+      steps: state.estimateItems.map(i=>`${i.label} (${i.qty}) = <b>₹${i.cost.toLocaleString('en-IN')}</b>`).concat([
+        ``, `Contingency = ${subtotal.toLocaleString('en-IN')} × ${contingencyPct}% = <b>₹${contingency.toLocaleString('en-IN')}</b>`,
+        `Grand Total = <b>₹${grand.toLocaleString('en-IN')}</b>`
+      ]),
+      shareText:`SiteCalc — Project Estimate\nGrand Total: ₹${grand.toLocaleString('en-IN')}\n`+state.estimateItems.map(i=>`${i.label}: ₹${i.cost.toLocaleString('en-IN')}`).join('\n')
+    };
+    this.saveToHistory({type:'estimate', title:'Project Estimate', subtitle:`${state.estimateItems.length} work items`, icon:'estimate',
+      inputs:{items:JSON.parse(JSON.stringify(state.estimateItems)), contingency:contingencyPct}, result:res});
+    this.showResult(res);
+  },
+
+  /* ---------- history save ---------- */
+  saveToHistory(entry){
+    entry.time = 'Just now';
+    state.history.unshift(entry);
+    if(state.history.length>30) state.history.pop();
+    this.renderHistory();
+    this.renderHome();
+    this.toast('Saved to History', true);
+  },
+
+  /* ---------- shared result rendering ---------- */
+  showResult(res){
+    state.lastResult = res;
+    document.getElementById('res-title').textContent = res.title;
+    document.getElementById('res-subtitle').textContent = res.subtitle;
+    const c = document.getElementById('res-content');
+    let html = `
+      <div class="result-hero">
+        <div class="rlabel">${res.heroLabel}</div>
+        <div class="rvalue">${res.heroValue}</div>
+        <div class="rsub">${res.heroSub}</div>
+        <div class="stat-row">${res.stats.map(s=>`<div class="stat-chip"><div class="sv">${s.v}</div><div class="sl">${s.l}</div></div>`).join('')}</div>
+      </div>`;
+    if(res.audit){
+      html += `<div class="audit-box"><span class="icon" data-icon="warning"></span><div><div class="atitle">${res.audit.title}</div><div class="atext">${res.audit.text}</div></div></div>`;
+    }
+    if(res.table){
+      html += `<div class="field-group" style="padding:14px;"><table class="bbs-table"><tr><th>Mark</th><th>Dia</th><th>Nos</th><th>Cut Len</th><th>Wt</th></tr>
+        ${res.table.map(r=>`<tr><td>${r.mark}</td><td>${r.dia}mm</td><td>${r.nos}</td><td>${r.len}m</td><td>${r.wt}kg</td></tr>`).join('')}
+      </table></div>`;
+    }
+    html += `
+      <div class="step-panel collapsed" id="step-panel">
+        <div class="sp-head" onclick="document.getElementById('step-panel').classList.toggle('collapsed')">
+          Step-by-step working <span class="icon" data-icon="chevron-down"></span>
+        </div>
+        <div class="sp-body">${res.steps.map(s=>s===''?'<br>':s+'<br>').join('')}</div>
+      </div>
+      <div class="share-row">
+        <button class="whatsapp-btn" onclick="app.shareWhatsapp()"><span class="icon" data-icon="whatsapp"></span> Share via WhatsApp</button>
+        <button class="pdf-btn" onclick="app.exportPdf()"><span class="icon" data-icon="pdf"></span> PDF</button>
+      </div>
+      <button class="secondary-btn" onclick="app.openAttach()"><span class="icon" data-icon="folder" style="width:16px;height:16px;"></span> Add to Project Phase</button>`;
+    c.innerHTML = html;
+    mountIcons(c);
+    this.goto('result');
+  },
+
+  shareWhatsapp(){
+    if(!state.lastResult) return;
+    const text = state.lastResult.shareText;
+    window.open('https://wa.me/?text='+encodeURIComponent(text), '_blank');
+    this.toast('Opening WhatsApp...', true);
+  },
+
+  exportPdf(){
+    if(!state.lastResult) return;
+    const res = state.lastResult;
+    const area = document.getElementById('print-area');
+    area.innerHTML = `
+      <div class="print-title">SiteCalc — ${res.title}</div>
+      <div class="print-sub">${res.subtitle} · Generated ${new Date().toLocaleDateString('en-IN')}</div>
+      <div class="print-hero">
+        <div class="plv">${res.heroLabel}</div>
+        <div class="pvv">${res.heroValue}</div>
+        <div class="plv">${res.heroSub}</div>
+        <div class="print-stats">${res.stats.map(s=>`<div><b>${s.v}</b><br>${s.l}</div>`).join('')}</div>
+      </div>
+      ${res.table ? `<table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px;">
+        <tr>${['Mark','Dia','Nos','Cut Len','Weight'].map(h=>`<th style="text-align:left;border-bottom:1px solid #999;padding:6px;">${h}</th>`).join('')}</tr>
+        ${res.table.map(r=>`<tr>${[r.mark,r.dia+'mm',r.nos,r.len+'m',r.wt+'kg'].map(v=>`<td style="padding:6px;border-bottom:1px solid #eee;">${v}</td>`).join('')}</tr>`).join('')}
+      </table>` : ''}
+      <div class="print-steps"><b>Step-by-step working</b><br><br>${res.steps.map(s=>s===''?'<br>':s+'<br>').join('')}</div>
+      <div class="print-footer">Generated with SiteCalc — construction quantity takeoff, built for IS-1200 / IS-2502 / IS-456 workflows.</div>
+    `;
+    this.toast('Generating your measurement sheet...', true);
+    setTimeout(()=>window.print(), 250);
+  },
+
+  /* ---------- attach calc to project phase ---------- */
+  openAttach(){
+    if(!state.lastResult){ this.toast('Run a calculation first', false); return; }
+    if(!state.projects.length){ this.toast('Create a project first', false); return; }
+    const res = state.lastResult;
+    document.getElementById('attach-summary').innerHTML = `
+      <h3>Calculation to Attach</h3>
+      <div class="opening-row" style="border-bottom:none; padding:0;">
+        <div class="oi"><span class="icon" data-icon="estimate" style="width:18px;height:18px;"></span><div>${res.title}</div></div>
+        <div style="font-weight:800; color:var(--brown-dark);">${res.heroValue}</div>
+      </div>`;
+    mountIcons(document.getElementById('attach-summary'));
+    const sel = document.getElementById('attach-project');
+    sel.innerHTML = state.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    this.rebuildAttachPhases();
+    this.goto('attach');
+  },
+  rebuildAttachPhases(){
+    const pid = document.getElementById('attach-project').value;
+    const p = state.projects.find(x=>x.id===pid);
+    document.getElementById('attach-phase').innerHTML = p.floors.map((f,i)=>`<option value="${i}">${f.name}</option>`).join('');
+  },
+  confirmAttach(){
+    const pid = document.getElementById('attach-project').value;
+    const phaseIdx = +document.getElementById('attach-phase').value;
+    const p = state.projects.find(x=>x.id===pid);
+    const f = p.floors[phaseIdx];
+    if(!f.calcs) f.calcs = [];
+    f.calcs.push({label:state.lastResult.title, value:state.lastResult.heroValue});
+    this.toast(`Added to ${p.name} — ${f.name}`, true);
+    this.back();
+  },
+
+  /* ---------- projects ---------- */
+  renderProjects(){
+    const wrap = document.getElementById('projects-list');
+    if(!state.projects.length){
+      wrap.innerHTML = `<div class="empty-state"><span class="icon" data-icon="folder"></span><p>Create your first project to build a full estimate.</p></div>`;
+      mountIcons(wrap); return;
+    }
+    wrap.innerHTML = state.projects.map(p=>{
+      let done=0, total=0;
+      p.floors.forEach(f=>{ const s=floorStats(f); done+=s.done; total+=s.total; });
+      const pct = total ? Math.round((done/total)*100) : 0;
+      return `
+      <div class="project-card" onclick="app.openProject('${p.id}')">
+        <div class="pc-top"><div class="pname">${p.name}</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="pamt">${p.amountLabel}</div>
+            <button class="card-delete" onclick="event.stopPropagation(); app.deleteProject('${p.id}')" aria-label="Delete project"><span class="icon" data-icon="trash"></span></button>
+          </div>
+        </div>
+        <div class="ploc"><span class="icon" data-icon="pin"></span> ${p.location}</div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+        <div class="pc-bottom"><div class="stage-label">Stage: ${p.currentStageLabel}</div><button class="view-btn">View <span class="icon" data-icon="chevron-right"></span></button></div>
+      </div>`;
+    }).join('');
+    mountIcons(wrap);
+  },
+  deleteProject(id){
+    const p = state.projects.find(x=>x.id===id);
+    if(!p) return;
+    this.confirmDialog('Delete '+p.name+'?', 'All calculations, materials and progress linked to this project will be removed. This cannot be undone.', ()=>{
+      state.projects = state.projects.filter(x=>x.id!==id);
+      this.renderProjects();
+      this.toast('Project deleted', true);
+    });
+  },
+
+  openProject(id){
+    state.activeProjectId = id;
+    this.buildProjectOverviewContent(id);
+    this.goto('project-overview');
+  },
+  buildProjectOverviewContent(id){
+    const p = state.projects.find(x=>x.id===id);
+    document.getElementById('po-name').textContent = p.name;
+    document.getElementById('po-loc').textContent = p.location;
+    let totalDone=0, totalItems=0;
+    p.floors.forEach(f=>{ const s=floorStats(f); totalDone+=s.done; totalItems+=s.total; });
+    const pct = totalItems ? Math.round((totalDone/totalItems)*100) : 0;
+    const statusClass = st => st==='Complete' ? 'complete' : (st==='In progress' ? 'progress' : 'notstarted');
+
+    document.getElementById('po-content').innerHTML = `
+      <div class="progress-card-hero">
+        <div class="plabel">Overall Progress</div>
+        <div class="pvalue">${pct}%</div>
+        <div class="psub">${totalDone} of ${totalItems} scope items complete</div>
+      </div>
+      <div class="two-col">
+        <div class="info-card">
+          <div class="il-row"><div class="il">Budget</div><span class="icon edit-icon" data-icon="pen" onclick="app.openEditBudget('${p.id}')"></span></div>
+          <div class="iv">₹${(p.budgetSpent/100000).toFixed(1)}L <small>/ ₹${(p.budgetTotal/100000).toFixed(1)}L</small></div>
+          <div class="progress-track" style="margin-top:8px;"><div class="progress-fill" style="width:${p.budgetTotal?Math.round((p.budgetSpent/p.budgetTotal)*100):0}%;"></div></div>
+        </div>
+        <div class="info-card">
+          <div class="il-row"><div class="il">Timeline</div><span class="icon edit-icon" data-icon="pen" onclick="app.openEditBudget('${p.id}')"></span></div>
+          <div class="iv" style="font-size:13px;">${p.startDate}<br><span style="color:var(--text-muted); font-weight:600; font-size:11px;">to</span><br>${p.endDate}</div>
+        </div>
+      </div>
+      <div class="section-title">Floor-by-Floor</div>
+      ${p.floors.map((f,fi)=>{ const s=floorStats(f); return `
+        <div class="floor-card" onclick="app.openFloorDetail('${p.id}', ${fi})">
+          <div class="fc-top"><div class="fname">${f.name}</div><div style="display:flex; align-items:center; gap:6px;"><div class="fstatus ${statusClass(s.status)}">${s.status}</div><span class="icon" data-icon="chevron-right"></span></div></div>
+          <div class="fitems">${s.done} of ${s.total} scope items</div>
+          <div class="progress-track"><div class="progress-fill" style="width:${s.total?Math.round((s.done/s.total)*100):0}%;"></div></div>
+          ${(f.calcs&&f.calcs.length) ? `<div>${f.calcs.map(c=>`<span class="floor-calc-chip">${c.label}: ${c.value}</span>`).join('')}</div>` : ''}
+        </div>`;}).join('')}
+      <div class="section-title">Team &amp; Contacts</div>
+      ${p.team.map(t=>`
+        <div class="team-row">
+          <div class="avatar">${t.initials}</div>
+          <div><div class="tname">${t.name}</div><div class="trole">${t.role}</div></div>
+          <div class="tphone">${t.phone}</div>
+        </div>`).join('')}
+      <button class="primary-btn" style="margin-top:6px;" onclick="app.openProjectStage('${p.id}')"><span class="icon" data-icon="folder" style="width:16px;height:16px;"></span> View Materials &amp; Order Status</button>
+    `;
+    mountIcons(document.getElementById('po-content'));
+  },
+
+  /* ---------- floor drill-down ---------- */
+  openFloorDetail(pid, fi){
+    state.activeProjectId = pid;
+    state.activeFloorIndex = fi;
+    this.buildFloorDetailContent(pid, fi);
+    this.goto('floor-detail');
+  },
+  closeFloorDetail(){
+    this.back();
+    this.buildProjectOverviewContent(state.activeProjectId);
+  },
+  buildFloorDetailContent(pid, fi){
+    const p = state.projects.find(x=>x.id===pid);
+    const f = p.floors[fi];
+    const s = floorStats(f);
+    document.getElementById('fd-name').textContent = f.name;
+    document.getElementById('fd-project').textContent = p.name;
+    document.getElementById('fd-content').innerHTML = `
+      <div class="progress-card-hero">
+        <div class="plabel">${f.name} Progress</div>
+        <div class="pvalue">${s.total?Math.round((s.done/s.total)*100):0}%</div>
+        <div class="psub">${s.done} of ${s.total} scope items complete</div>
+      </div>
+      <div class="field-group">
+        <h3>Scope Items</h3>
+        ${f.items.map((it,ii)=>`
+          <div class="scope-item-row">
+            <button class="scope-check ${it.done?'checked':''}" onclick="app.toggleScopeItem('${pid}',${fi},${ii})" aria-label="Mark complete"><span class="icon" data-icon="check"></span></button>
+            <input class="scope-item-input ${it.done?'done':''}" value="${it.label}" onchange="app.renameScopeItem('${pid}',${fi},${ii},this.value)">
+            <button class="card-delete" onclick="app.deleteScopeItem('${pid}',${fi},${ii})" aria-label="Remove scope item"><span class="icon" data-icon="trash"></span></button>
+          </div>`).join('') || `<div class="empty-state" style="padding:20px;"><p>No scope items yet.</p></div>`}
+        <button class="add-row" onclick="app.addScopeItem('${pid}',${fi})"><span class="plus"><span class="icon" data-icon="plus"></span></span> Add Scope Item</button>
+      </div>
+      ${(f.calcs&&f.calcs.length) ? `
+      <div class="field-group">
+        <h3>Attached Calculations</h3>
+        ${f.calcs.map((c,ci)=>`
+          <div class="opening-row"><div class="oi"><span class="icon" data-icon="estimate" style="width:18px;height:18px;"></span><div>${c.label}</div></div>
+            <div style="display:flex; align-items:center; gap:10px;"><div style="font-weight:700; color:var(--brown-dark);">${c.value}</div>
+            <button class="card-delete" onclick="app.detachCalc('${pid}',${fi},${ci})" aria-label="Detach calculation"><span class="icon" data-icon="trash"></span></button></div>
+          </div>`).join('')}
+      </div>` : ''}
+    `;
+    mountIcons(document.getElementById('fd-content'));
+  },
+  toggleScopeItem(pid, fi, ii){
+    const f = state.projects.find(x=>x.id===pid).floors[fi];
+    f.items[ii].done = !f.items[ii].done;
+    this.buildFloorDetailContent(pid, fi);
+  },
+  renameScopeItem(pid, fi, ii, val){
+    state.projects.find(x=>x.id===pid).floors[fi].items[ii].label = val;
+  },
+  deleteScopeItem(pid, fi, ii){
+    const f = state.projects.find(x=>x.id===pid).floors[fi];
+    f.items.splice(ii,1);
+    this.buildFloorDetailContent(pid, fi);
+  },
+  addScopeItem(pid, fi){
+    const f = state.projects.find(x=>x.id===pid).floors[fi];
+    f.items.push({label:'New scope item', done:false});
+    this.buildFloorDetailContent(pid, fi);
+  },
+  detachCalc(pid, fi, ci){
+    const f = state.projects.find(x=>x.id===pid).floors[fi];
+    f.calcs.splice(ci,1);
+    this.buildFloorDetailContent(pid, fi);
+  },
+
+  /* ---------- edit budget & timeline ---------- */
+  openEditBudget(id){
+    state.activeProjectId = id;
+    const p = state.projects.find(x=>x.id===id);
+    document.getElementById('eb-name').textContent = p.name;
+    document.getElementById('eb-spent').value = p.budgetSpent;
+    document.getElementById('eb-total').value = p.budgetTotal;
+    document.getElementById('eb-start').value = p.startDateRaw || '';
+    document.getElementById('eb-end').value = p.endDateRaw || '';
+    this.goto('edit-budget');
+  },
+  saveBudgetTimeline(){
+    const p = state.projects.find(x=>x.id===state.activeProjectId);
+    p.budgetSpent = +document.getElementById('eb-spent').value || 0;
+    p.budgetTotal = +document.getElementById('eb-total').value || 0;
+    p.amountLabel = '₹'+(p.budgetTotal/100000).toFixed(1)+'L';
+    const startRaw = document.getElementById('eb-start').value;
+    const endRaw = document.getElementById('eb-end').value;
+    const fmt = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : 'TBD';
+    p.startDateRaw = startRaw; p.endDateRaw = endRaw;
+    p.startDate = fmt(startRaw); p.endDate = fmt(endRaw);
+    this.toast('Budget & timeline updated', true);
+    this.back();
+    this.buildProjectOverviewContent(p.id);
+    this.renderProjects();
+  },
+
+  openProjectStage(id){
+    const p = state.projects.find(x=>x.id===id);
+    document.getElementById('ps-name').textContent = p.name;
+    const doneCount = p.stages.filter(s=>s.done).length;
+    document.getElementById('ps-content').innerHTML = `
+      <div class="field-group">
+        <h3>Construction Stages</h3>
+        <div class="stage-track">
+          ${p.stages.map((s,i)=>`
+            <div class="stage-dot ${s.done?'done':''} ${s.current?'current':''}"><div class="dot"></div><div class="slabel">${s.label}</div></div>
+            ${i<p.stages.length-1?`<div class="stage-line ${s.done?'done':''}"></div>`:''}
+          `).join('')}
+        </div>
+      </div>
+      <div class="field-group">
+        <h3>Materials — ${p.currentStageLabel}</h3>
+        ${p.materials.length ? p.materials.map(m=>`
+          <div class="material-row"><div class="mstatus ${m.status}"></div><div class="mtitle">${m.name}</div><div class="mqty">${m.qty}${m.status==='ord'?' — Ordered':''}</div></div>
+        `).join('') : `<div class="empty-state" style="padding:20px;"><p>No materials listed yet for this stage.</p></div>`}
+      </div>
+      <button class="primary-btn" style="background:var(--green-dark);" onclick="app.shareOrderList('${p.id}')"><span class="icon" data-icon="whatsapp"></span> Share Order List</button>
+    `;
+    mountIcons(document.getElementById('ps-content'));
+    this.goto('project-stage');
+  },
+
+  shareOrderList(id){
+    const p = state.projects.find(x=>x.id===id);
+    const outstanding = p.materials.filter(m=>m.status==='out');
+    const text = `SiteCalc — Material Order List\n${p.name} (${p.currentStageLabel})\n\nOutstanding:\n${outstanding.map(m=>`- ${m.name}: ${m.qty}`).join('\n') || 'None'}`;
+    window.open('https://wa.me/?text='+encodeURIComponent(text), '_blank');
+    this.toast('Opening WhatsApp...', true);
+  },
+
+  createProject(){
+    const name = document.getElementById('np-name').value.trim();
+    const loc = document.getElementById('np-loc').value.trim();
+    const floors = +document.getElementById('np-floors').value || 1;
+    const budget = +document.getElementById('np-budget').value || 0;
+    const startRaw = document.getElementById('np-start').value;
+    const endRaw = document.getElementById('np-end').value;
+    if(!name || !loc){ this.toast('Enter a project name and location', false); return; }
+    const fmt = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : 'TBD';
+    const id = 'p'+(state.projects.length+1)+'-'+Date.now();
+    const floorArr = Array.from({length:floors}).map((_,i)=>({
+      name: i===0?'Ground Floor':`Floor ${i}`,
+      items:[{label:'Foundation & Structure',done:false},{label:'Brickwork',done:false},{label:'Finishing',done:false},{label:'Handover',done:false}]
+    }));
+    state.projects.unshift({
+      id, name, location:loc, amountLabel:'₹'+(budget/100000).toFixed(1)+'L',
+      budgetSpent:0, budgetTotal:budget,
+      startDateRaw:startRaw, endDateRaw:endRaw,
+      startDate:fmt(startRaw), endDate:fmt(endRaw),
+      floors:floorArr, team:[{initials:'K',name:'Krishna Rao',role:'Owner',phone:'+91 98765 43210'}],
+      currentStageLabel:'Not started', stages:[{key:'start',label:'Start',current:true}],
+      materials:[]
+    });
+    this.toast('Project created', true);
+    this.renderProjects();
+    this.goto('projects', true);
+  },
+
+  /* ---------- history ---------- */
+  renderHistory(){
+    const wrap = document.getElementById('history-list');
+    if(!state.history.length){
+      wrap.innerHTML = `<div class="empty-state"><span class="icon" data-icon="clock"></span><p>Your recent calculations will appear here.</p></div>`;
+      mountIcons(wrap); return;
+    }
+    wrap.innerHTML = state.history.map((h,i)=>`
+      <div class="history-card" onclick="app.openHistoryDetail(${i})">
+        <div class="hicon"><span class="icon" data-icon="${h.icon}"></span></div>
+        <div style="flex:1; min-width:0;"><div class="htitle">${h.title}</div><div class="hsub">${h.subtitle} · ${h.time}</div></div>
+        <div class="hright">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div class="hval">${h.result.heroValue}</div>
+            <button class="card-delete" onclick="event.stopPropagation(); app.deleteHistory(${i})"><span class="icon" data-icon="trash"></span></button>
+          </div>
+          <button class="hdup" onclick="event.stopPropagation(); app.duplicateHistory(${i})">Duplicate <span class="icon" data-icon="chevron-right" style="width:11px;height:11px;"></span></button>
+        </div>
+      </div>`).join('');
+    mountIcons(wrap);
+  },
+  deleteHistory(i){
+    const h = state.history[i];
+    this.confirmDialog('Delete this calculation?', `"${h.title} — ${h.subtitle}" will be removed from your history. This cannot be undone.`, ()=>{
+      state.history.splice(i,1);
+      this.renderHistory();
+      this.renderHome();
+      this.toast('Calculation deleted', true);
+    });
+  },
+  openHistoryDetail(i){
+    const h = state.history[i];
+    this.showResult(h.result);
+  },
+  duplicateHistory(i){
+    const h = state.history[i];
+    const map = TYPE_TO_CALC;
+    if(h.type==='brickwork'){
+      state.openings = JSON.parse(JSON.stringify(h.inputs.openings));
+      this.goto(map[h.type]);
+      document.getElementById('bw-walls').value = h.inputs.walls;
+      document.getElementById('bw-length').value = h.inputs.length;
+      document.getElementById('bw-height').value = h.inputs.height;
+      document.getElementById('bw-thickness').value = h.inputs.thickness;
+      if(h.inputs.brickDims){
+        document.getElementById('bw-brick-l').value = h.inputs.brickDims.l;
+        document.getElementById('bw-brick-w').value = h.inputs.brickDims.w;
+        document.getElementById('bw-brick-t').value = h.inputs.brickDims.t;
+      }
+      if(h.inputs.sandParts) document.getElementById('bw-mortar-sand').value = h.inputs.sandParts;
+      if(h.inputs.wastage) document.getElementById('bw-wastage').value = h.inputs.wastage;
+      this.renderOpenings();
+    } else if(h.type==='bbs'){
+      state.barMarks = JSON.parse(JSON.stringify(h.inputs.marks));
+      this.goto(map[h.type]);
+      this.renderBarMarks();
+    } else if(h.type==='rcc'){
+      this.goto(map[h.type]);
+      document.getElementById('rc-length').value = h.inputs.length;
+      document.getElementById('rc-width').value = h.inputs.width;
+      document.getElementById('rc-grade').value = h.inputs.grade;
+      document.querySelectorAll('#rc-thickness .chip').forEach(c=>c.classList.toggle('active', +c.dataset.val===h.inputs.thickness));
+    } else if(h.type==='excavation'){
+      this.goto(map[h.type]);
+      document.getElementById('ex-length').value = h.inputs.length;
+      document.getElementById('ex-width').value = h.inputs.width;
+      document.getElementById('ex-depth').value = h.inputs.depth;
+      document.getElementById('ex-soil').value = h.inputs.soil;
+      document.getElementById('ex-truck').value = h.inputs.truck;
+    } else if(h.type==='tile'){
+      this.goto(map[h.type]);
+      document.getElementById('tl-length').value = h.inputs.length;
+      document.getElementById('tl-width').value = h.inputs.width;
+      document.getElementById('tl-size').value = h.inputs.size;
+      document.getElementById('tl-wastage').value = h.inputs.wastage;
+      document.querySelectorAll('#tl-surface .chip').forEach(c=>c.classList.toggle('active', c.dataset.val===h.inputs.surface));
+    } else if(h.type==='plaster'){
+      this.goto(map[h.type]);
+      document.getElementById('pl-length').value = h.inputs.length;
+      document.getElementById('pl-height').value = h.inputs.height;
+      document.getElementById('pl-ratio').value = h.inputs.ratio;
+      document.getElementById('pl-wastage').value = h.inputs.wastage;
+      document.querySelectorAll('#pl-surface .chip').forEach(c=>c.classList.toggle('active', c.dataset.val===h.inputs.surface));
+      document.querySelectorAll('#pl-thickness .chip').forEach(c=>c.classList.toggle('active', +c.dataset.val===h.inputs.thickness));
+    } else if(h.type==='shuttering'){
+      this.goto(map[h.type]);
+      document.getElementById('sh-length').value = h.inputs.length;
+      document.getElementById('sh-height').value = h.inputs.height;
+      document.getElementById('sh-faces').value = h.inputs.faces;
+      document.getElementById('sh-wastage').value = h.inputs.wastage;
+      document.querySelectorAll('#sh-element .chip').forEach(c=>c.classList.toggle('active', c.dataset.val===h.inputs.element));
+    } else if(h.type==='waterproof'){
+      this.goto(map[h.type]);
+      document.getElementById('wp-length').value = h.inputs.length;
+      document.getElementById('wp-width').value = h.inputs.width;
+      document.getElementById('wp-treatment').value = h.inputs.treatment;
+    } else if(h.type==='concrete'){
+      this.goto(map[h.type]);
+      document.getElementById('cc-length').value = h.inputs.l;
+      document.getElementById('cc-width').value = h.inputs.w;
+      document.getElementById('cc-depth').value = h.inputs.d;
+      document.getElementById('cc-grade').value = h.inputs.grade;
+      document.getElementById('cc-wastage').value = h.inputs.wastage;
+      document.querySelectorAll('#cc-worktype .chip').forEach(c=>c.classList.toggle('active', c.dataset.val===h.inputs.workType));
+    } else {
+      this.goto(map[h.type] || 'estimate-builder');
+    }
+    this.toast('Loaded into calculator — adjust and recalculate', true);
+  },
+
+  /* ---------- confirm modal ---------- */
+  confirmDialog(title, text, onConfirm){
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-text').textContent = text;
+    const btn = document.getElementById('confirm-action-btn');
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', ()=>{ onConfirm(); this.closeConfirm(); });
+    document.getElementById('confirm-overlay').classList.add('show');
+  },
+  closeConfirm(){
+    document.getElementById('confirm-overlay').classList.remove('show');
+  },
+
+  /* ---------- toast ---------- */
+  toast(msg, ok){
+    const t = document.getElementById('toast');
+    document.getElementById('toast-text').textContent = msg;
+    t.querySelector('.icon').style.color = ok===false ? 'var(--red)' : 'var(--green)';
+    t.classList.add('show');
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+  }
+};
+
+/* ============================================================
+   CHIP GROUP BEHAVIOUR (single-select toggles)
+   ============================================================ */
+document.addEventListener('click', (e)=>{
+  const chip = e.target.closest('.chip-row .chip[data-val], .chip-row .chip');
+  if(chip && chip.parentElement.classList.contains('chip-row') && chip.parentElement.id !== 'cv-quickref'){
+    const isSelectable = chip.parentElement.querySelectorAll('.chip').length>1 && chip.hasAttribute('data-val') || chip.parentElement.id==='cc-worktype' || chip.parentElement.id==='bbs-element' || chip.parentElement.id==='tl-surface' || chip.parentElement.id==='rc-thickness' || chip.parentElement.id==='np-type';
+    if(isSelectable){
+      chip.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+    }
+  }
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener('click', (e)=>{
+  const wrap = document.getElementById('search-results');
+  const input = document.getElementById('home-search');
+  if(wrap && !wrap.contains(e.target) && e.target!==input){
+    wrap.classList.remove('show');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  mountIcons(document);
+  app.renderOpenings();
+  app.renderBarMarks();
+  app.renderEstimateItems();
+  app.renderProjects();
+  app.rebuildConverterUnits();
+  app.renderCalcGrid();
+  seedHistory();
+  app.renderHistory();
+  app.renderHome();
+
+  const hour = new Date().getHours();
+  const greet = hour<12 ? 'Good Morning!' : hour<17 ? 'Good Afternoon!' : 'Good Evening!';
+  document.getElementById('home-greeting').textContent = greet+' Krishna';
+
+  setTimeout(()=>{ app.goto('login', true); }, 1400);
+});
+</script>
+</body>
+</html>
